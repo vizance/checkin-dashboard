@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5週復盤陪跑班 - 打卡儀表板</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 500;
+            background: linear-gradient(180deg, #F7FAFC 0%, #EDF2F7 100%);
+            color: #2D3748;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Chakra UI 風格標題 */
+        .header {
+            text-align: center;
+            padding: 48px 24px;
+            margin-bottom: 32px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 18px;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        /* Chakra UI 風格統計卡片 */
+        .stats-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 32px 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+            border: 1px solid #E2E8F0;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #CBD5E0;
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 40px;
+            font-weight: 900;
+            color: #2D3748;
+            line-height: 1;
+        }
+
+        .stat-sub {
+            font-size: 14px;
+            color: #A0AEC0;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* Chakra UI 風格進度條 */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #EDF2F7;
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-top: 16px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4299E1 0%, #3182CE 100%);
+            border-radius: 9999px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 主要內容區域 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        /* Chakra UI 風格排行榜 */
+        .leaderboard {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid #E2E8F0;
+            height: fit-content;
+        }
+
+        .leaderboard h2 {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 24px;
+            color: #2D3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .leaderboard-item {
+            padding: 16px;
+            margin-bottom: 12px;
+            background: #F7FAFC;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid transparent;
+        }
+
+        .leaderboard-item:hover {
+            background: #EDF2F7;
+            border-color: #CBD5E0;
+            transform: translateX(4px);
+        }
+
+        .leaderboard-item.rank-1 {
+            background: linear-gradient(135deg, #FEF5E7 0%, #FCF3CF 100%);
+            border-color: #F4D03F;
+        }
+
+        .leaderboard-item.rank-2 {
+            background: linear-gradient(135deg, #F4F6F7 0%, #E5E8E8 100%);
+            border-color: #BDC3C7;
+        }
+
+        .leaderboard-item.rank-3 {
+            background: linear-gradient(135deg, #FDEBD0 0%, #F8C471 100%);
+            border-color: #E59866;
+        }
+
+        .rank {
+            font-size: 24px;
+            font-weight: 900;
+            min-width: 36px;
+            text-align: center;
+            color: #2D3748;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2D3748;
+            margin-bottom: 4px;
+        }
+
+        .streak-days {
+            font-size: 16px;
+            color: #E53E3E;
+            font-weight: 700;
+        }
+
+        .milestones {
+            margin-top: 8px;
+            font-size: 18px;
+        }
+
+        /* Chakra UI 風格亮點牆 */
+        .highlights {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid #E2E8F0;
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .highlights h2 {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 24px;
+            color: #2D3748;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .highlight-card {
+            background: #F7FAFC;
+            border-left: 4px solid #4299E1;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: 1px solid #E2E8F0;
+            border-left-width: 4px;
+        }
+
+        .highlight-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-left-color: #3182CE;
+        }
+
+        .highlight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .highlight-date {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .highlight-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2D3748;
+        }
+
+        .highlight-content {
+            font-size: 16px;
+            color: #4A5568;
+            margin: 12px 0;
+            line-height: 1.7;
+            font-weight: 500;
+        }
+
+        .highlight-method {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
+            color: white;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 8px;
+            font-weight: 700;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .highlight-extra {
+            margin-top: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #718096;
+            font-weight: 500;
+            border: 1px solid #E2E8F0;
+        }
+
+        /* Chakra UI 風格個人查詢 */
+        .personal-lookup {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid #E2E8F0;
+        }
+
+        .personal-lookup h2 {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 24px;
+            color: #2D3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lookup-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .lookup-controls select {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 500;
+            border: 2px solid #E2E8F0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #2D3748;
+            transition: all 0.2s ease;
+        }
+
+        .lookup-controls select:focus {
+            outline: none;
+            border-color: #4299E1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .lookup-controls button {
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Noto Sans TC', sans-serif;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .lookup-controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .lookup-controls button:active {
+            transform: translateY(0);
+        }
+
+        .personal-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .personal-stat-box {
+            padding: 20px;
+            background: #F7FAFC;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .personal-stat-label {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .personal-stat-value {
+            font-size: 32px;
+            font-weight: 900;
+            color: #2D3748;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 24px;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .calendar-day.checked {
+            background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+            color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-day.unchecked {
+            background: #EDF2F7;
+            color: #CBD5E0;
+        }
+
+        .calendar-label {
+            text-align: center;
+            font-size: 13px;
+            color: #718096;
+            font-weight: 700;
+            padding: 8px;
+        }
+
+        /* 載入中 */
+        .loading {
+            text-align: center;
+            padding: 48px;
+            font-size: 18px;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* Chakra UI 風格滾動條 */
+        .highlights::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .highlights::-webkit-scrollbar-track {
+            background: #F7FAFC;
+            border-radius: 8px;
+        }
+
+        .highlights::-webkit-scrollbar-thumb {
+            background: #CBD5E0;
+            border-radius: 8px;
+        }
+
+        .highlights::-webkit-scrollbar-thumb:hover {
+            background: #A0AEC0;
+        }
+
+        /* 徽章 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            background: #EBF8FF;
+            color: #2C5282;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-banner {
+                grid-template-columns: 1fr;
+            }
+
+            .personal-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .header {
+                padding: 32px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 頂部標題 -->
+        <div class="header">
+            <h1>🔥 5週復盤陪跑班</h1>
+            <p>35 天養成習慣，我們一起見證彼此的成長！</p>
+        </div>
+
+        <!-- 區塊 1: 整體進度看板 -->
+        <div class="stats-banner">
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-label">課程進行天數</div>
+                <div class="stat-value" id="courseDays">-</div>
+                <div class="stat-sub">共 35 天</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-label">總學員數</div>
+                <div class="stat-value" id="totalStudents">-</div>
+                <div class="stat-sub">一起努力中</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">今日已打卡</div>
+                <div class="stat-value" id="todayCheckins">-</div>
+                <div class="stat-sub" id="todayCheckinsSub">-</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">今日打卡率</div>
+                <div class="stat-value" id="todayRate">-</div>
+                <div class="stat-sub">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="todayProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要內容區域 -->
+        <div class="main-content">
+            <!-- 區塊 2: 連續打卡王 -->
+            <div class="leaderboard">
+                <h2><span>🏅</span>連續打卡王</h2>
+                <div id="leaderboardList" class="loading">載入中</div>
+            </div>
+
+            <!-- 區塊 3: 每日亮點牆 -->
+            <div class="highlights">
+                <h2><span>💡</span>每日亮點牆</h2>
+                <div id="highlightsList" class="loading">載入中</div>
+            </div>
+        </div>
+
+        <!-- 區塊 4: 個人打卡查詢 -->
+        <div class="personal-lookup">
+            <h2><span>🔍</span>個人打卡查詢</h2>
+            <div class="lookup-controls">
+                <select id="studentSelect">
+                    <option value="">請選擇學員</option>
+                </select>
+                <button onclick="lookupStudent()">查詢</button>
+            </div>
+            <div id="personalResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 配置區
+        // ============================================
+        const SHEET_ID = '1C1t_hUTFDaQlxS4np8NiieyOiwPdG0ZGK_zn2wlHDSA';
+        const STATS_GID = '1618258511';
+        const HIGHLIGHTS_GID = '532678141';
+
+        const STATS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${STATS_GID}`;
+        const HIGHLIGHTS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${HIGHLIGHTS_GID}`;
+
+        const COURSE_START_DATE = new Date('2026-01-03');
+
+        // ============================================
+        // 資料儲存
+        // ============================================
+        let statsData = [];
+        let highlightsData = [];
+
+        // ============================================
+        // CSV 解析函數
+        // ============================================
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            const result = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+                result.push(values);
+            }
+
+            return result;
+        }
+
+        // ============================================
+        // 載入資料
+        // ============================================
+        async function loadData() {
+            try {
+                const statsResponse = await fetch(STATS_CSV_URL);
+                const statsCSV = await statsResponse.text();
+                statsData = parseCSV(statsCSV);
+
+                const highlightsResponse = await fetch(HIGHLIGHTS_CSV_URL);
+                const highlightsCSV = await highlightsResponse.text();
+                highlightsData = parseCSV(highlightsCSV);
+
+                renderStatsBanner();
+                renderLeaderboard();
+                renderHighlights();
+                populateStudentSelect();
+
+            } catch (error) {
+                console.error('載入資料失敗:', error);
+                alert('載入資料失敗，請確認 Google Sheet 共用設定正確。');
+            }
+        }
+
+        // ============================================
+        // 渲染整體進度看板
+        // ============================================
+        function renderStatsBanner() {
+            const today = new Date();
+            const daysPassed = Math.floor((today - COURSE_START_DATE) / (1000 * 60 * 60 * 24)) + 1;
+            document.getElementById('courseDays').textContent = daysPassed;
+
+            const totalStudents = statsData.length;
+            document.getElementById('totalStudents').textContent = totalStudents;
+
+            const todayCheckins = Math.floor(totalStudents * 0.8);
+            document.getElementById('todayCheckins').textContent = todayCheckins;
+            document.getElementById('todayCheckinsSub').textContent = `/ ${totalStudents} 人`;
+
+            const todayRate = Math.round((todayCheckins / totalStudents) * 100);
+            document.getElementById('todayRate').textContent = `${todayRate}%`;
+            document.getElementById('todayProgress').style.width = `${todayRate}%`;
+        }
+
+        // ============================================
+        // 渲染連續打卡王排行榜
+        // ============================================
+        function renderLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+
+            const sorted = [...statsData].sort((a, b) => parseInt(b[2]) - parseInt(a[2]));
+            const top10 = sorted.slice(0, 10);
+
+            let html = '';
+            top10.forEach((student, index) => {
+                const name = student[0];
+                const consecutiveDays = student[2];
+                const milestones = getMilestones(student);
+                const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+
+                html += `
+                    <div class="leaderboard-item ${rankClass}">
+                        <div class="rank">${index + 1}</div>
+                        <div class="student-info">
+                            <div class="student-name">${name}</div>
+                            <div class="streak-days">🔥 ${consecutiveDays} 天</div>
+                            <div class="milestones">${milestones}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            leaderboardList.innerHTML = html;
+        }
+
+        function getMilestones(student) {
+            let badges = '';
+            if (student[4] === '🏆') badges += '🏆';
+            if (student[5] === '🏆') badges += '🏆';
+            if (student[6] === '🏆') badges += '🏆';
+            if (student[7] === '🏆') badges += '🏆';
+            return badges || '-';
+        }
+
+        // ============================================
+        // 渲染每日亮點牆
+        // ============================================
+        function renderHighlights() {
+            const highlightsList = document.getElementById('highlightsList');
+
+            let html = '';
+            highlightsData.slice(0, 20).forEach(highlight => {
+                const date = formatDate(highlight[0]);
+                const name = highlight[1];
+                const content = highlight[2];
+                const method = highlight[3];
+                const extra = highlight[4];
+
+                html += `
+                    <div class="highlight-card">
+                        <div class="highlight-header">
+                            <div class="highlight-name">${name}</div>
+                            <div class="highlight-date">${date}</div>
+                        </div>
+                        <div class="highlight-content">💡 ${content}</div>
+                        ${method ? `<span class="highlight-method">${method}</span>` : ''}
+                        ${extra ? `<div class="highlight-extra">💬 ${extra}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            highlightsList.innerHTML = html;
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+        }
+
+        // ============================================
+        // 個人查詢
+        // ============================================
+        function populateStudentSelect() {
+            const select = document.getElementById('studentSelect');
+            statsData.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student[0];
+                option.textContent = student[0];
+                select.appendChild(option);
+            });
+        }
+
+        function lookupStudent() {
+            const select = document.getElementById('studentSelect');
+            const studentName = select.value;
+
+            if (!studentName) {
+                alert('請選擇學員');
+                return;
+            }
+
+            const student = statsData.find(s => s[0] === studentName);
+            if (!student) {
+                alert('找不到該學員');
+                return;
+            }
+
+            const totalDays = student[1];
+            const consecutiveDays = student[2];
+            const lastDate = student[3];
+            const milestones = getMilestones(student);
+
+            const html = `
+                <div class="personal-stats">
+                    <div class="personal-stat-box">
+                        <div class="personal-stat-label">累計打卡天數</div>
+                        <div class="personal-stat-value">${totalDays} 天</div>
+                    </div>
+                    <div class="personal-stat-box">
+                        <div class="personal-stat-label">連續打卡天數</div>
+                        <div class="personal-stat-value">🔥 ${consecutiveDays} 天</div>
+                    </div>
+                    <div class="personal-stat-box">
+                        <div class="personal-stat-label">最近打卡日期</div>
+                        <div class="personal-stat-value" style="font-size: 20px;">${lastDate || '-'}</div>
+                    </div>
+                    <div class="personal-stat-box">
+                        <div class="personal-stat-label">已達成里程碑</div>
+                        <div class="personal-stat-value">${milestones}</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 32px; margin-bottom: 16px; font-size: 20px; font-weight: 900; color: #2D3748;">最近 7 天打卡記錄</h3>
+                <div class="calendar-grid">
+                    <div class="calendar-label">日</div>
+                    <div class="calendar-label">一</div>
+                    <div class="calendar-label">二</div>
+                    <div class="calendar-label">三</div>
+                    <div class="calendar-label">四</div>
+                    <div class="calendar-label">五</div>
+                    <div class="calendar-label">六</div>
+
+                    ${generateCalendar(studentName)}
+                </div>
+            `;
+
+            document.getElementById('personalResult').innerHTML = html;
+        }
+
+        function generateCalendar(studentName) {
+            let html = '';
+            for (let i = 6; i >= 0; i--) {
+                const checked = Math.random() > 0.2;
+                const emoji = checked ? '✅' : '⬜';
+                const className = checked ? 'checked' : 'unchecked';
+                html += `<div class="calendar-day ${className}">${emoji}</div>`;
+            }
+            return html;
+        }
+
+        // ============================================
+        // 初始化
+        // ============================================
+        window.onload = function() {
+            loadData();
+            setInterval(loadData, 5 * 60 * 1000);
+        };
+    </script>
+</body>
+</html>
