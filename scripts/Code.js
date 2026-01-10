@@ -52,6 +52,8 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu('🔧 工具')
       .addItem('檢查工作表設定', 'checkRequiredSheets')
+      .addItem('⚡ 設定所有公式', 'setupStatsFormulas')
+      .addSeparator()
       .addItem('一鍵完整初始化', 'quickSetup'))
     .addToUi();
 }
@@ -98,28 +100,68 @@ function quickSetup() {
   }
 
   // 2. 生成測試資料
-  ui.alert('步驟 1/3：生成測試資料...');
+  ui.alert('步驟 1/4：生成測試資料...');
   generateTestData35DaysPerfect(50);
 
-  // 3. 更新連續天數
+  // 3. 設定公式
   Utilities.sleep(2000); // 等待 2 秒
-  ui.alert('步驟 2/3：更新連續天數...');
+  ui.alert('步驟 2/4：設定公式...');
+  setupStatsFormulasQuiet();
+
+  // 4. 更新連續天數
+  Utilities.sleep(2000);
+  ui.alert('步驟 3/4：更新連續天數...');
   updateAllConsecutiveDays();
 
-  // 4. 設定自動觸發器
+  // 5. 設定自動觸發器
   Utilities.sleep(2000);
-  ui.alert('步驟 3/3：設定自動觸發器...');
+  ui.alert('步驟 4/4：設定自動觸發器...');
   createMultipleDailyTriggersQuiet();
 
   ui.alert(
     '✅ 初始化完成！',
     '系統已完成以下設定：\n\n' +
     '✅ 生成 50 位學員的 35 天測試資料\n' +
+    '✅ 設定所有公式（累計天數、里程碑等）\n' +
     '✅ 更新所有學員的連續天數\n' +
     '✅ 設定每日 3 次自動觸發器\n\n' +
     '現在可以測試儀表板了！',
     ui.ButtonSet.OK
   );
+}
+
+/**
+ * 靜默版本的公式設定（用於自動化流程）
+ */
+function setupStatsFormulasQuiet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const statsSheet = ss.getSheetByName('打卡統計');
+
+  if (!statsSheet) return;
+
+  const lastRow = statsSheet.getLastRow();
+  if (lastRow <= 1) return;
+
+  const numRows = lastRow - 1;
+
+  // B欄：累計打卡天數
+  const totalDaysRange = statsSheet.getRange(2, 2, numRows, 1);
+  totalDaysRange.setFormula('=COUNTIF(表單回應!$C:$C, A2)');
+
+  // D欄：最近打卡日期
+  const lastDateRange = statsSheet.getRange(2, 4, numRows, 1);
+  lastDateRange.setFormula('=IFERROR(MAXIFS(表單回應!$D:$D, 表單回應!$C:$C, A2), "")');
+
+  // E-H欄：里程碑
+  statsSheet.getRange(2, 5, numRows, 1).setFormula('=IF(C2>=7, "🏆", "-")');
+  statsSheet.getRange(2, 6, numRows, 1).setFormula('=IF(C2>=14, "🏆", "-")');
+  statsSheet.getRange(2, 7, numRows, 1).setFormula('=IF(C2>=21, "🏆", "-")');
+  statsSheet.getRange(2, 8, numRows, 1).setFormula('=IF(C2>=28, "🏆", "-")');
+
+  // I欄：35天里程碑
+  if (statsSheet.getLastColumn() >= 9) {
+    statsSheet.getRange(2, 9, numRows, 1).setFormula('=IF(C2>=35, "🏆", "-")');
+  }
 }
 
 /**
@@ -182,6 +224,81 @@ function checkRequiredSheets() {
   }
 
   ui.alert('工作表檢查結果', message, ui.ButtonSet.OK);
+}
+
+/**
+ * 自動設定「打卡統計」工作表的所有公式
+ * 包含：累計打卡天數、最近打卡日期、里程碑（7/14/21/28/35天）
+ */
+function setupStatsFormulas() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const statsSheet = ss.getSheetByName('打卡統計');
+
+  if (!statsSheet) {
+    SpreadsheetApp.getUi().alert('❌ 錯誤', '找不到「打卡統計」工作表！', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
+  const lastRow = statsSheet.getLastRow();
+
+  if (lastRow <= 1) {
+    SpreadsheetApp.getUi().alert('⚠️ 提醒', '「打卡統計」工作表沒有學員資料！\n請先在「學員名單」新增學員。', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
+  // 設定公式的範圍（從第 2 行開始到最後一行）
+  const numRows = lastRow - 1;
+
+  // B欄：累計打卡天數（計算該學員在表單回應中出現的次數）
+  const totalDaysFormula = '=COUNTIF(表單回應!$C:$C, A2)';
+  const totalDaysRange = statsSheet.getRange(2, 2, numRows, 1);
+  totalDaysRange.setFormula(totalDaysFormula);
+
+  // D欄：最近打卡日期（取該學員最新的打卡日期）
+  const lastDateFormula = '=IFERROR(MAXIFS(表單回應!$D:$D, 表單回應!$C:$C, A2), "")';
+  const lastDateRange = statsSheet.getRange(2, 4, numRows, 1);
+  lastDateRange.setFormula(lastDateFormula);
+
+  // E欄：7天里程碑
+  const milestone7Formula = '=IF(C2>=7, "🏆", "-")';
+  const milestone7Range = statsSheet.getRange(2, 5, numRows, 1);
+  milestone7Range.setFormula(milestone7Formula);
+
+  // F欄：14天里程碑
+  const milestone14Formula = '=IF(C2>=14, "🏆", "-")';
+  const milestone14Range = statsSheet.getRange(2, 6, numRows, 1);
+  milestone14Range.setFormula(milestone14Formula);
+
+  // G欄：21天里程碑
+  const milestone21Formula = '=IF(C2>=21, "🏆", "-")';
+  const milestone21Range = statsSheet.getRange(2, 7, numRows, 1);
+  milestone21Range.setFormula(milestone21Formula);
+
+  // H欄：28天里程碑
+  const milestone28Formula = '=IF(C2>=28, "🏆", "-")';
+  const milestone28Range = statsSheet.getRange(2, 8, numRows, 1);
+  milestone28Range.setFormula(milestone28Formula);
+
+  // I欄：35天里程碑（如果有的話）
+  if (statsSheet.getLastColumn() >= 9) {
+    const milestone35Formula = '=IF(C2>=35, "🏆", "-")';
+    const milestone35Range = statsSheet.getRange(2, 9, numRows, 1);
+    milestone35Range.setFormula(milestone35Formula);
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '✅ 公式設定完成！',
+    '已自動設定以下公式：\n\n' +
+    '✅ B欄：累計打卡天數\n' +
+    '✅ D欄：最近打卡日期\n' +
+    '✅ E欄：7天里程碑\n' +
+    '✅ F欄：14天里程碑\n' +
+    '✅ G欄：21天里程碑\n' +
+    '✅ H欄：28天里程碑\n' +
+    '✅ I欄：35天里程碑\n\n' +
+    '影響 ' + numRows + ' 位學員。',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
 }
 
 // ============================================
@@ -465,12 +582,16 @@ function generateTestData(numStudents = 100) {
     range.setValues(batchData);
   }
 
+  // 自動設定公式
+  setupStatsFormulasQuiet();
+
   SpreadsheetApp.getUi().alert(
-    '測試資料已產生！\n\n' +
+    '✅ 測試資料已產生！\n\n' +
     '學員數量：' + numStudents + ' 位\n' +
     '打卡記錄：' + totalRecords + ' 筆\n' +
-    '平均出席率：約 85-95%\n\n' +
-    '記得執行 updateAllConsecutiveDays() 來更新連續天數！'
+    '平均出席率：約 85-95%\n' +
+    '✅ 所有公式已自動設定\n\n' +
+    '接下來執行：選單 > 🔄 更新連續天數'
   );
 }
 
@@ -585,12 +706,16 @@ function generateTestData35DaysPerfect(numStudents = 50) {
     range.setValues(batchData);
   }
 
+  // 自動設定公式
+  setupStatsFormulasQuiet();
+
   SpreadsheetApp.getUi().alert(
     '✅ 完美 35 天連續打卡測試資料已產生！\n\n' +
     '學員數量：' + numStudents + ' 位\n' +
     '打卡記錄：' + totalRecords + ' 筆 (' + numStudents + ' × 35 天)\n' +
-    '出席率：100%（所有學員都有完整 35 天打卡記錄）\n\n' +
-    '記得執行 updateAllConsecutiveDays() 來更新連續天數！'
+    '出席率：100%（所有學員都有完整 35 天打卡記錄）\n' +
+    '✅ 所有公式已自動設定\n\n' +
+    '接下來執行：選單 > 🔄 更新連續天數'
   );
 }
 
@@ -637,7 +762,14 @@ function clearTestData() {
       range.clearContent();
     }
 
-    ui.alert('✅ 測試資料已清空！\n\n標題列已保留，可以開始產生新的測試資料。');
+    ui.alert(
+      '✅ 測試資料已清空！',
+      '標題列已保留。\n\n接下來請執行：\n' +
+      '1. 在「學員名單」新增真實學員\n' +
+      '2. 選單 > 🔧 工具 > ⚡ 設定所有公式\n' +
+      '3. 選單 > ⚙️ 自動化設定 > 設定自動觸發器',
+      ui.ButtonSet.OK
+    );
   } else {
     ui.alert('已取消操作。');
   }
