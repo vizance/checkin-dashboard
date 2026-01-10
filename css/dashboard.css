@@ -111,6 +111,103 @@
             font-style: italic;
         }
 
+        .checkin-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+        }
+
+        /* 移除 stick-figure 樣式 */
+
+        .speech-bubble {
+            position: relative;
+            background: #fff;
+            border: 3px solid #2C3E50;
+            border-radius: 50px;
+            /* 更圓潤 */
+            padding: 12px 25px;
+            /* 加大內距 */
+            font-size: 18px;
+            /* 加大字體 */
+            font-weight: 900;
+            color: #2C3E50;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .speech-bubble:hover {
+            transform: scale(1.02);
+            box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 移除原本的對話框箭頭 */
+        .speech-bubble::before,
+        .speech-bubble::after {
+            display: none;
+        }
+
+        .speech-bubble a {
+            color: #FF6B35;
+            text-decoration: none;
+            border-bottom: 3px solid #FF6B35;
+            /* 加粗底線 */
+            padding-bottom: 2px;
+            transition: all 0.2s ease;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .speech-bubble a:hover {
+            color: #E65100;
+            border-bottom-color: #E65100;
+            transform: rotate(-2deg) scale(1.1);
+        }
+
+        /* 手機版 RWD */
+        @media (max-width: 768px) {
+            .refresh-notice {
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .refresh-divider {
+                display: none;
+                /* 手機版隱藏分隔線 */
+            }
+
+            .checkin-container {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .speech-bubble {
+                width: 100%;
+                font-size: 16px;
+                padding: 15px;
+                border-radius: 12px;
+                /* 手機版稍微方一點，節省空間 */
+                box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
+            }
+
+            .speech-bubble a {
+                display: block;
+                /* 手機版讓連結換行，更容易點擊 */
+                margin-top: 5px;
+                margin-left: 0;
+                width: fit-content;
+                margin: 5px auto 0;
+            }
+        }
+
+        .speech-bubble a:hover {
+            color: #E65100;
+            border-bottom-color: #E65100;
+            transform: rotate(-2deg) scale(1.1);
+        }
+
         /* 統計卡片 - 手繪風格 */
         .stats-banner {
             display: grid;
@@ -250,7 +347,7 @@
         /* 主要內容區域 */
         .main-content {
             display: grid;
-            grid-template-columns: 350px 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 25px;
             margin-bottom: 30px;
         }
@@ -372,7 +469,6 @@
             border-radius: 8px;
             padding: 25px;
             box-shadow: 6px 6px 0px #2C3E50;
-            max-height: 800px;
             overflow-y: auto;
             overflow-x: hidden;
         }

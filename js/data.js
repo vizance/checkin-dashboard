@@ -20,7 +20,8 @@ import {
     renderTodayCheckinStatus,
     renderLeaderboard,
     renderHighlights,
-    populateStudentSelect
+    populateStudentSelect,
+    syncSectionHeights
 } from './dashboard.js';
 
 /**
@@ -79,6 +80,7 @@ export async function loadData(useCache = true) {
                 renderLeaderboard();
                 renderHighlights();
                 populateStudentSelect();
+                syncSectionHeights();
                 return;
             }
         }
@@ -109,6 +111,7 @@ export async function loadData(useCache = true) {
         renderLeaderboard();
         renderHighlights();
         populateStudentSelect();
+        syncSectionHeights();
 
     } catch (error) {
         console.error('載入資料失敗:', error);

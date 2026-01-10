@@ -630,3 +630,28 @@ export function lookupStudent() {
 
     document.getElementById('personalResult').innerHTML = html;
 }
+
+// ============================================
+// 同步區塊高度
+// ============================================
+export function syncSectionHeights() {
+    const leaderboard = document.querySelector('.leaderboard');
+    const highlights = document.querySelector('.highlights');
+
+    if (leaderboard && highlights) {
+        // 1. 先清除 highlights 的高度設定，讓它自然長高
+        highlights.style.height = 'auto';
+        highlights.style.maxHeight = 'none';
+
+        // 2. 獲取排行榜的實際高度 (這是我們的基準)
+        const leaderboardHeight = leaderboard.offsetHeight;
+
+        // 3. 設定 highlights 的最大高度等於排行榜的高度
+        highlights.style.maxHeight = leaderboardHeight + 'px';
+
+        // 4. 設定 highlights 的高度也等於排行榜的高度，確保視覺一致
+        highlights.style.height = leaderboardHeight + 'px';
+
+        console.log(`同步高度: 排行榜 ${leaderboardHeight}px -> 亮點牆 (height & max-height set)`);
+    }
+}
