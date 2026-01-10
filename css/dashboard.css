@@ -1098,8 +1098,8 @@
         }
 
         .refresh-button {
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 16px 32px;
+            font-size: 20px;
             font-weight: 900;
             background: #FF6B35;
             color: white;
@@ -1107,18 +1107,31 @@
             border-radius: 8px;
             cursor: pointer;
             font-family: 'Noto Sans TC', sans-serif;
-            box-shadow: 3px 3px 0px #2C3E50;
+            box-shadow: 4px 4px 0px #2C3E50;
             transition: all 0.2s ease;
         }
 
         .refresh-button:hover {
             transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0px #2C3E50;
+            box-shadow: 6px 6px 0px #2C3E50;
         }
 
         .refresh-button:active {
-            transform: translate(0, 0);
+            transform: translate(1px, 1px);
             box-shadow: 2px 2px 0px #2C3E50;
+        }
+
+        .refresh-button:disabled {
+            background: #CCC;
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+            box-shadow: 3px 3px 0px #999;
+        }
+
+        .refresh-button:disabled:hover {
+            transform: none;
+            box-shadow: 3px 3px 0px #999;
         }
 
         .toggle-section {
@@ -1126,13 +1139,27 @@
             user-select: none;
             display: inline-flex;
             align-items: center;
-            font-size: 16px;
-            color: #666;
-            font-weight: 700;
+            font-size: 18px;
+            color: #2C3E50;
+            font-weight: 900;
+            padding: 14px 28px;
+            background: #F8F9FA;
+            border: 3px solid #2C3E50;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0px #2C3E50;
+            transition: all 0.2s ease;
         }
 
         .toggle-section:hover {
+            background: #FFE5D9;
             color: #FF6B35;
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #2C3E50;
+        }
+
+        .toggle-section:active {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px #2C3E50;
         }
 
         /* 個人查詢 */
@@ -1485,8 +1512,15 @@
 
             .refresh-button {
                 width: 100%;
-                font-size: 14px;
-                padding: 10px 20px;
+                font-size: 18px;
+                padding: 14px 28px;
+            }
+
+            .toggle-section {
+                width: 100%;
+                justify-content: center;
+                font-size: 16px;
+                padding: 12px 24px;
             }
 
             .student-avatars {
