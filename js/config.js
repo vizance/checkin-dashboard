@@ -26,14 +26,16 @@ export const CACHE_KEY_HIGHLIGHTS = 'checkin_highlights_cache';
 export const CACHE_DURATION = 5 * 60 * 1000; // 5 分鐘緩存
 
 // 全局資料儲存
-export let statsData = [];
-export let highlightsData = [];
+export const statsData = [];
+export const highlightsData = [];
 
 // 設置資料的函數
 export function setStatsData(data) {
-    statsData = data;
+    statsData.length = 0;  // 清空現有數據
+    statsData.push(...data);  // 添加新數據
 }
 
 export function setHighlightsData(data) {
-    highlightsData = data;
+    highlightsData.length = 0;  // 清空現有數據
+    highlightsData.push(...data);  // 添加新數據
 }
