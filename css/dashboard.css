@@ -78,8 +78,17 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.1); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
         }
 
         .refresh-text {
@@ -179,7 +188,7 @@
         .stat-icon {
             font-size: 48px;
             margin-bottom: 15px;
-            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.2));
+            filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.2));
         }
 
         .stat-label {
@@ -194,7 +203,7 @@
             font-size: 58px;
             font-weight: 900;
             color: #FF6B35;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
         }
 
         .stat-sub {
@@ -231,13 +240,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(255,255,255,0.1) 10px,
-                rgba(255,255,255,0.1) 20px
-            );
+            background: repeating-linear-gradient(45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255, 255, 255, 0.1) 10px,
+                    rgba(255, 255, 255, 0.1) 20px);
         }
 
         /* 主要內容區域 */
@@ -416,7 +423,7 @@
             margin-right: 5px;
             border-radius: 8px;
             position: relative;
-            box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
             transition: all 0.2s ease;
             max-width: 100%;
             overflow-wrap: break-word;
@@ -425,7 +432,7 @@
 
         .highlight-card:hover {
             transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0px rgba(0,0,0,0.15);
+            box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.15);
         }
 
         .highlight-header {
@@ -545,8 +552,9 @@
             background: white;
             border: 3px solid #2C3E50;
             border-radius: 10px;
-            overflow: visible; /* 改為 visible 讓里程碑可以顯示在外面 */
-            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            overflow: visible;
+            /* 改為 visible 讓里程碑可以顯示在外面 */
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
             position: relative;
         }
 
@@ -554,7 +562,7 @@
             height: 100%;
             background: linear-gradient(90deg, #FF6B35 0%, #FF8C52 100%);
             transition: width 0.5s ease;
-            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .challenge-percentage {
@@ -576,11 +584,30 @@
             gap: 4px;
             z-index: 10;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
         .milestone:hover {
-            transform: translate(-50%, -50%) scale(1.2);
+            transform: translate(-50%, -50%) scale(1.3);
+            z-index: 100;
+        }
+
+        .milestone:hover .milestone-icon {
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.3),
+                4px 4px 0px rgba(0, 0, 0, 0.3);
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
         }
 
         .milestone-icon {
@@ -593,7 +620,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
         }
 
         .milestone-label {
@@ -605,6 +633,130 @@
             border-radius: 4px;
             border: 2px solid #2C3E50;
             white-space: nowrap;
+        }
+
+        /* 里程碑鼓勵話語 tooltip - 手繪風格橫向版本 */
+        .milestone-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 20px;
+            background: white;
+            color: #2C3E50;
+            padding: 12px 18px;
+            border: 3px solid #FF6B35;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 4px 4px 0px #FF6B35;
+            z-index: 200;
+            min-width: 240px;
+            max-width: 400px;
+            text-align: center;
+            line-height: 1.5;
+            white-space: normal;
+        }
+
+        /* Tooltip 箭頭 - 手繪風格 */
+        .milestone-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 10px solid transparent;
+            border-top-color: #FF6B35;
+        }
+
+        /* Tooltip 內部白色三角形 */
+        .milestone-tooltip::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 7px solid transparent;
+            border-top-color: white;
+            z-index: 1;
+            margin-top: -3px;
+        }
+
+        .milestone:hover .milestone-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-8px);
+        }
+
+        /* 手機版 RWD - 調整 tooltip 大小和位置 */
+        @media (max-width: 768px) {
+            .milestone-tooltip {
+                font-size: 13px;
+                padding: 10px 14px;
+                min-width: 180px;
+                max-width: 300px;
+                margin-bottom: 15px;
+            }
+
+            .milestone-tooltip::after {
+                border-width: 8px;
+            }
+
+            .milestone-tooltip::before {
+                border-width: 5px;
+                margin-top: -3px;
+            }
+        }
+
+        /* 超小手機螢幕 */
+        @media (max-width: 480px) {
+            .milestone-tooltip {
+                font-size: 12px;
+                padding: 8px 12px;
+                min-width: 160px;
+                max-width: 260px;
+                margin-bottom: 12px;
+            }
+        }
+
+
+
+        /* === Tooltip 顯示邏輯：根據里程碑是否達成 === */
+
+        /* 預設隱藏所有 tooltip */
+        .milestone-tooltip-achieved,
+        .milestone-tooltip-locked {
+            display: none;
+        }
+
+        /* 已達成的里程碑：hover 時顯示鼓勵話語 */
+        .milestone.achieved:hover .milestone-tooltip-achieved {
+            display: block;
+        }
+
+        /* 未達成的里程碑：hover 時顯示神秘問號 */
+        .milestone:not(.achieved):hover .milestone-tooltip-locked {
+            display: block;
+        }
+
+        /* 未達成里程碑的 tooltip 樣式 - 灰色調增加神秘感 */
+        .milestone-tooltip-locked {
+            background: #F5F5F5;
+            border-color: #999;
+            color: #666;
+            box-shadow: 4px 4px 0px #CCC;
+        }
+
+        .milestone-tooltip-locked::after {
+            border-top-color: #999;
+        }
+
+        .milestone-tooltip-locked::before {
+            border-top-color: #F5F5F5;
         }
 
         /* 最後一個里程碑特殊樣式 */
@@ -619,7 +771,7 @@
             background: #4CAF50;
             border-color: #2C3E50;
             box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3),
-                        3px 3px 0px #2C3E50;
+                3px 3px 0px #2C3E50;
             animation: glow 2s ease-in-out infinite;
         }
 
@@ -642,19 +794,29 @@
         }
 
         @keyframes glow {
-            0%, 100% {
+
+            0%,
+            100% {
                 box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3),
-                            3px 3px 0px #2C3E50;
+                    3px 3px 0px #2C3E50;
             }
+
             50% {
                 box-shadow: 0 0 0 5px rgba(76, 175, 80, 0.5),
-                            3px 3px 0px #2C3E50;
+                    3px 3px 0px #2C3E50;
             }
         }
 
         @keyframes celebrate {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.3); }
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.3);
+            }
         }
 
         .heatmap-grid {
@@ -676,12 +838,12 @@
             border-radius: 3px;
             cursor: pointer;
             transition: all 0.15s ease;
-            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
         }
 
         .heatmap-cell:hover {
             transform: scale(1.3);
-            box-shadow: 3px 3px 0px rgba(0,0,0,0.25);
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.25);
             z-index: 10;
         }
 
@@ -705,24 +867,29 @@
 
         /* 熱力圖顏色等級 - 優化版本 */
         .heatmap-cell.level-0 {
-            background: #F5F5F5;  /* 淺灰 (0-20%) - 低打卡率 */
+            background: #F5F5F5;
+            /* 淺灰 (0-20%) - 低打卡率 */
             border-color: #E0E0E0;
         }
 
         .heatmap-cell.level-1 {
-            background: #FFE0B2;  /* 淺橘 (21-40%) - 需加油 */
+            background: #FFE0B2;
+            /* 淺橘 (21-40%) - 需加油 */
         }
 
         .heatmap-cell.level-2 {
-            background: #FFB74D;  /* 中橘 (41-60%) - 還不錯 */
+            background: #FFB74D;
+            /* 中橘 (41-60%) - 還不錯 */
         }
 
         .heatmap-cell.level-3 {
-            background: #FF8C52;  /* 深橘 (61-80%) - 很好 */
+            background: #FF8C52;
+            /* 深橘 (61-80%) - 很好 */
         }
 
         .heatmap-cell.level-4 {
-            background: #4CAF50;  /* 綠色 (81-100%) - 優秀！*/
+            background: #4CAF50;
+            /* 綠色 (81-100%) - 優秀！*/
         }
 
         /* level-0 的數字用深色顯示 */
@@ -733,18 +900,21 @@
         /* level-4 的數字用白色顯示 */
         .heatmap-cell.level-4 .day-number {
             color: white;
-            text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3);
         }
 
         .heatmap-cell.future {
-            background: transparent;  /* 透明背景 */
-            border: 2px dashed #E0E0E0;  /* 虛線邊框 */
+            background: transparent;
+            /* 透明背景 */
+            border: 2px dashed #E0E0E0;
+            /* 虛線邊框 */
             opacity: 0.3;
             cursor: not-allowed;
         }
 
         .heatmap-cell.future:hover {
-            transform: none;  /* 不放大 */
+            transform: none;
+            /* 不放大 */
             box-shadow: none;
         }
 
@@ -760,7 +930,7 @@
             white-space: nowrap;
             pointer-events: none;
             z-index: 1000;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
             display: none;
         }
 
@@ -785,7 +955,7 @@
             height: 16px;
             border: 2px solid #2C3E50;
             border-radius: 2px;
-            box-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+            box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
         }
 
         /* 圖例顏色 - 更新版本 */
@@ -851,7 +1021,7 @@
             border: 3px solid #2C3E50;
             border-radius: 8px;
             text-align: center;
-            box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
         }
 
         .checkin-stat-box.checked {
@@ -1043,7 +1213,7 @@
             background: #FAFAFA;
             border: 3px solid #2C3E50;
             border-radius: 8px;
-            box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
         }
 
         .personal-stat-label {
@@ -1112,9 +1282,20 @@
         }
 
         @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60%,
+            100% {
+                content: '...';
+            }
         }
 
         /* 手繪風格滾動條 */

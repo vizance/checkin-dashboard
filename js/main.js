@@ -31,16 +31,17 @@ window.onload = function() {
 
     // 每 1 分鐘自動刷新今日打卡狀態（更即時）
     setInterval(() => {
-        console.log('自動刷新今日打卡狀態...');
+        console.log(' 自動刷新今日打卡狀態 ...');
         loadData(false); // 不使用緩存，直接從遠端載入
     }, 60 * 1000); // 1 分鐘
 };
 
 // 將 refreshTodayStatus 暴露給全局，供 HTML 的 onclick 使用
-import { refreshTodayStatus } from './data.js';
+import { refreshTodayStatus } from './dashboard.js';
 window.refreshTodayStatus = refreshTodayStatus;
 
 // 將其他必要的函數暴露給全局
 import { toggleStudentList, lookupStudent } from './dashboard.js';
 window.toggleStudentList = toggleStudentList;
 window.lookupStudent = lookupStudent;
+
