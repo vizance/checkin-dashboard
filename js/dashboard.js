@@ -1,0 +1,632 @@
+/**
+ * Dashboard 業務邏輯模組
+ * 包含所有統計、渲染和互動功能
+ */
+
+import {
+    TEST_TODAY_DATE,
+    COURSE_START_DATE,
+    SHEET_ID,
+    STATS_GID,
+    HIGHLIGHTS_GID,
+    statsData,
+    highlightsData
+} from './config.js';
+
+// ============================================
+// 渲染整體進度看板
+// ============================================
+export function renderStatsBanner() {
+    const totalStudents = statsData.length;
+    const checkedStudents = getTodayCheckedStudents();
+    const todayCheckins = checkedStudents.length;
+    const todayRate = totalStudents > 0 ? Math.round((todayCheckins / totalStudents) * 100) : 0;
+
+    // 更新總學員數
+    document.getElementById('totalStudents').textContent = totalStudents;
+
+    // 更新今日打卡狀況
+    document.getElementById('todayCheckins').textContent = todayCheckins;
+    document.getElementById('todayCheckinsTotal').textContent = totalStudents;
+    document.getElementById('todayRateInline').textContent = todayRate;
+
+    // 更新進度條
+    const progressBar = document.getElementById('todayProgress');
+    progressBar.style.width = todayRate + '%';
+
+    console.log(`Stats Banner: ${totalStudents} 位學員, 今日 ${todayCheckins} 人打卡 (${todayRate}%)`);
+}
+
+function getTodayCheckedStudents() {
+    // 使用測試日期或真實日期
+    const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
+    today.setHours(0, 0, 0, 0);
+
+    console.log('=== 今日打卡檢查開始 ===');
+    console.log('今天的日期（timestamp）:', today.getTime(), '=', today.toLocaleDateString());
+    if (TEST_TODAY_DATE) {
+        console.log('⚠️ 測試模式：使用模擬日期');
+    }
+
+    const checkedStudents = new Set();
+
+    highlightsData.forEach((highlight, index) => {
+        if (!highlight[0] || !highlight[1]) return;
+
+        const originalDateStr = highlight[0];
+        const studentName = highlight[1];
+
+        // 處理 Google Sheets 的日期時間格式 (例如: "2026/1/9 下午 4:52:25")
+        // 先提取空格前的日期部分
+        const dateOnly = originalDateStr.trim().split(' ')[0];
+
+        // 解析日期
+        let highlightDate = new Date(dateOnly);
+
+        // 如果解析失敗，嘗試其他格式
+        if (isNaN(highlightDate.getTime())) {
+            const parts = dateOnly.split(/[-/]/);
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    // YYYY-MM-DD 或 YYYY/M/D
+                    highlightDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                } else {
+                    // MM/DD/YYYY
+                    highlightDate = new Date(parts[2], parts[0] - 1, parts[1]);
+                }
+            }
+        }
+
+        if (isNaN(highlightDate.getTime())) {
+            if (index < 5) { // 只顯示前 5 筆，避免 console 太多
+                console.warn(`[${index}] 無法解析日期: "${originalDateStr}"`);
+            }
+            return;
+        }
+
+        highlightDate.setHours(0, 0, 0, 0);
+
+        // 顯示前 5 筆的比對結果
+        if (index < 5) {
+            console.log(`[${index}] ${studentName}: 原始="${originalDateStr}" → 解析後=${highlightDate.toLocaleDateString()} (${highlightDate.getTime()}) → 是今天？${highlightDate.getTime() === today.getTime()}`);
+        }
+
+        // 如果是今天，加入已打卡名單
+        if (highlightDate.getTime() === today.getTime()) {
+            checkedStudents.add(studentName);
+        }
+    });
+
+    const result = Array.from(checkedStudents);
+    console.log('今日已打卡學員:', result);
+    console.log('=== 今日打卡檢查結束 ===\n');
+
+    return result;
+}
+
+// ============================================
+// 打卡熱力圖
+// ============================================
+
+/**
+ * 計算指定日期的打卡率
+ * @param {Date} date - 要計算的日期
+ * @returns {Object} { count, total, rate }
+ */
+function getCheckinRateForDate(date) {
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+
+    const totalStudents = statsData.length;
+    let checkedCount = 0;
+
+    // 統計該日期有多少人打卡
+    highlightsData.forEach(highlight => {
+        if (!highlight[0]) return;
+
+        // 處理 Google Sheets 的日期時間格式
+        const dateOnly = highlight[0].trim().split(' ')[0];
+        let highlightDate = new Date(dateOnly);
+
+        if (isNaN(highlightDate.getTime())) {
+            const parts = dateOnly.split(/[-/]/);
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    highlightDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                } else {
+                    highlightDate = new Date(parts[2], parts[0] - 1, parts[1]);
+                }
+            }
+        }
+
+        if (!isNaN(highlightDate.getTime())) {
+            highlightDate.setHours(0, 0, 0, 0);
+            if (highlightDate.getTime() === targetDate.getTime()) {
+                checkedCount++;
+            }
+        }
+    });
+
+    const rate = totalStudents > 0 ? (checkedCount / totalStudents) * 100 : 0;
+    return { count: checkedCount, total: totalStudents, rate: Math.round(rate) };
+}
+
+/**
+ * 根據打卡率返回顏色等級
+ * @param {number} rate - 打卡率 (0-100)
+ * @returns {string} CSS class name
+ */
+function getHeatmapLevel(rate) {
+    if (rate === 0) return 'level-0';
+    if (rate <= 20) return 'level-0';
+    if (rate <= 40) return 'level-1';
+    if (rate <= 60) return 'level-2';
+    if (rate <= 80) return 'level-3';
+    return 'level-4';
+}
+
+/**
+ * 渲染打卡熱力圖
+ */
+export function renderHeatmap() {
+    const heatmapGrid = document.getElementById('heatmapGrid');
+    const tooltip = document.getElementById('heatmapTooltip');
+
+    const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 更新挑戰進度資訊
+    const daysPassed = Math.floor((today - COURSE_START_DATE) / (1000 * 60 * 60 * 24)) + 1;
+    const progressPercentage = Math.round((daysPassed / 35) * 100);
+
+    document.getElementById('challengeCurrentDay').textContent = daysPassed;
+    document.getElementById('challengeProgressFill').style.width = progressPercentage + '%';
+    document.getElementById('challengePercentage').textContent = progressPercentage + '%';
+
+    // 更新里程碑狀態
+    const milestones = document.querySelectorAll('.milestone');
+    milestones.forEach(milestone => {
+        const milestoneDay = parseInt(milestone.dataset.day);
+        if (daysPassed >= milestoneDay) {
+            milestone.classList.add('achieved');
+        } else {
+            milestone.classList.remove('achieved');
+        }
+    });
+
+    let html = '';
+
+    // 生成 35 天的方格（從課程開始到今天，最多 35 天）
+    for (let i = 0; i < 35; i++) {
+        const date = new Date(COURSE_START_DATE);
+        date.setDate(date.getDate() + i);
+        date.setHours(0, 0, 0, 0);
+
+        const dayNumber = i + 1;
+        const isFuture = date > today;
+
+        if (isFuture) {
+            // 未來日期
+            html += `
+                <div class="heatmap-cell future" data-day="${dayNumber}" data-date="${date.toISOString()}" data-future="true">
+                    <span class="day-number">${dayNumber}</span>
+                </div>
+            `;
+        } else {
+            // 過去或今天的日期
+            const stats = getCheckinRateForDate(date);
+            const level = getHeatmapLevel(stats.rate);
+
+            html += `
+                <div class="heatmap-cell ${level}"
+                     data-day="${dayNumber}"
+                     data-date="${date.toISOString()}"
+                     data-count="${stats.count}"
+                     data-total="${stats.total}"
+                     data-rate="${stats.rate}">
+                    <span class="day-number">${dayNumber}</span>
+                </div>
+            `;
+        }
+    }
+
+    heatmapGrid.innerHTML = html;
+
+    // 加入 hover 和觸控事件
+    const cells = heatmapGrid.querySelectorAll('.heatmap-cell');
+    let currentOpenCell = null;
+
+    const showTooltip = (cell) => {
+        const isFuture = cell.dataset.future === 'true';
+        if (isFuture) {
+            tooltip.textContent = `第 ${cell.dataset.day} 天：尚未開始`;
+        } else {
+            const day = cell.dataset.day;
+            const count = cell.dataset.count;
+            const total = cell.dataset.total;
+            const rate = cell.dataset.rate;
+            tooltip.textContent = `第 ${day} 天：${count}/${total} 人打卡 (${rate}%)`;
+        }
+
+        // 定位 tooltip
+        const rect = cell.getBoundingClientRect();
+        tooltip.style.left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + 'px';
+        tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + window.scrollY + 'px';
+        tooltip.style.display = 'block';
+    };
+
+    const hideTooltip = () => {
+        tooltip.style.display = 'none';
+        currentOpenCell = null;
+    };
+
+    cells.forEach(cell => {
+        // 桌面版：hover 事件
+        cell.addEventListener('mouseenter', (e) => {
+            showTooltip(cell);
+        });
+
+        cell.addEventListener('mouseleave', () => {
+            hideTooltip();
+        });
+
+        // 手機版：觸控事件
+        cell.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (currentOpenCell === cell) {
+                // 如果點擊同一個格子，關閉 tooltip
+                hideTooltip();
+            } else {
+                // 否則顯示 tooltip
+                showTooltip(cell);
+                currentOpenCell = cell;
+            }
+        });
+    });
+
+    // 點擊其他地方關閉 tooltip
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.heatmap-cell') && !e.target.closest('.heatmap-tooltip')) {
+            hideTooltip();
+        }
+    });
+
+    console.log('熱力圖已渲染：35 天');
+}
+
+// ============================================
+// 渲染今日打卡動態
+// ============================================
+export function renderTodayCheckinStatus() {
+    const allStudents = statsData.map(s => s[0]); // 所有學員名單
+    const checkedStudents = getTodayCheckedStudents(); // 今日已打卡
+    const uncheckedStudents = allStudents.filter(name => !checkedStudents.includes(name)); // 未打卡
+
+    // 更新統計數字
+    document.getElementById('todayCheckedCount').textContent = checkedStudents.length;
+    document.getElementById('todayUncheckedCount').textContent = uncheckedStudents.length;
+    document.getElementById('checkedListCount').textContent = checkedStudents.length;
+    document.getElementById('uncheckedListCount').textContent = uncheckedStudents.length;
+
+    // 渲染已打卡學員
+    const checkedContainer = document.getElementById('checkedStudents');
+    let checkedHTML = '';
+    checkedStudents.forEach(name => {
+        checkedHTML += `
+            <div class="student-avatar checked">
+                <div class="emoji">✅</div>
+                <div>${name}</div>
+            </div>
+        `;
+    });
+    checkedContainer.innerHTML = checkedHTML || '<div style="text-align: center; padding: 20px; color: #999;">還沒有人打卡</div>';
+
+    // 渲染未打卡學員
+    const uncheckedContainer = document.getElementById('uncheckedStudents');
+    let uncheckedHTML = '';
+    uncheckedStudents.forEach(name => {
+        uncheckedHTML += `
+            <div class="student-avatar unchecked">
+                <div class="emoji">⏸️</div>
+                <div>${name}</div>
+            </div>
+        `;
+    });
+    uncheckedContainer.innerHTML = uncheckedHTML || '<div style="text-align: center; padding: 20px; color: #999;">全部都打卡了！🎉</div>';
+
+    console.log(`今日打卡動態: 已打卡 ${checkedStudents.length} 人，未打卡 ${uncheckedStudents.length} 人`);
+}
+
+// ============================================
+// 切換學員列表顯示
+// ============================================
+export function toggleStudentList() {
+    const container = document.getElementById('studentAvatarsContainer');
+    const icon = document.getElementById('toggleIcon');
+
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        container.style.display = 'none';
+        icon.textContent = '▼';
+    }
+}
+
+// ============================================
+// 立即刷新今日打卡狀態（不使用緩存）
+// ============================================
+export async function refreshTodayStatus() {
+    const { loadData } = await import('./data.js');
+    const button = document.querySelector('.refresh-button');
+    button.textContent = '⏳ 刷新中...';
+    button.disabled = true;
+
+    try {
+        await loadData(false); // 強制從遠端載入
+        button.textContent = '✅ 刷新完成';
+        setTimeout(() => {
+            button.textContent = '🔄 立即刷新';
+            button.disabled = false;
+        }, 1500);
+    } catch (error) {
+        button.textContent = '❌ 刷新失敗';
+        setTimeout(() => {
+            button.textContent = '🔄 立即刷新';
+            button.disabled = false;
+        }, 1500);
+    }
+}
+
+// ============================================
+// 渲染連續打卡王排行榜
+// ============================================
+export function renderLeaderboard() {
+    const leaderboardList = document.getElementById('leaderboardList');
+    leaderboardList.classList.remove('loading');
+
+    const sorted = [...statsData].sort((a, b) => parseInt(b[2]) - parseInt(a[2]));
+    const top10 = sorted.slice(0, 10);
+
+    let html = '';
+    top10.forEach((student, index) => {
+        const name = student[0];
+        const consecutiveDays = student[2];
+        const milestones = getMilestones(student);
+        const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+
+        html += `
+            <div class="leaderboard-item ${rankClass}">
+                <span class="rank">${index + 1}</span>
+                <div class="student-info">
+                    <div class="student-name">${name}</div>
+                    <div class="streak-days">🔥 ${consecutiveDays} 天</div>
+                    <div class="milestones">${milestones}</div>
+                </div>
+            </div>
+        `;
+    });
+
+    leaderboardList.innerHTML = html;
+}
+
+function getMilestones(student) {
+    let badges = '';
+    if (student[4] === '🏆') badges += '🏆';
+    if (student[5] === '🏆') badges += '🏆';
+    if (student[6] === '🏆') badges += '🏆';
+    if (student[7] === '🏆') badges += '🏆';
+    return badges || '-';
+}
+
+// ============================================
+// 渲染每日亮點牆（只顯示今天）
+// ============================================
+export function renderHighlights() {
+    const highlightsList = document.getElementById('highlightsList');
+    highlightsList.classList.remove('loading');
+
+    // 取得今天的日期（不含時間）
+    const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 過濾出今天的亮點
+    const todayHighlights = highlightsData.filter(highlight => {
+        if (!highlight[0]) return false;
+
+        // 處理 Google Sheets 的日期時間格式 (例如: "2026/1/9 下午 4:52:25")
+        // 先提取空格前的日期部分
+        const dateOnly = highlight[0].trim().split(' ')[0];
+
+        // 解析日期
+        let highlightDate = new Date(dateOnly);
+
+        // 如果解析失敗，嘗試其他格式
+        if (isNaN(highlightDate.getTime())) {
+            const parts = dateOnly.split(/[-/]/);
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    // YYYY-MM-DD 或 YYYY/M/D
+                    highlightDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                } else {
+                    // MM/DD/YYYY
+                    highlightDate = new Date(parts[2], parts[0] - 1, parts[1]);
+                }
+            }
+        }
+
+        // 如果還是無效，跳過
+        if (isNaN(highlightDate.getTime())) {
+            return false;
+        }
+
+        highlightDate.setHours(0, 0, 0, 0);
+
+        // 只返回今天的
+        return highlightDate.getTime() === today.getTime();
+    });
+
+    console.log(`今日亮點: ${todayHighlights.length} 筆 (總共 ${highlightsData.length} 筆)`);
+
+    let html = '';
+
+    if (todayHighlights.length === 0) {
+        html = `
+            <div style="text-align: center; padding: 60px 20px; color: #999;">
+                <div style="font-size: 48px; margin-bottom: 20px;">📝</div>
+                <div style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">今天還沒有同學分享亮點</div>
+                <div style="font-size: 18px;">成為第一個分享的人吧！</div>
+            </div>
+        `;
+    } else {
+        todayHighlights.forEach(highlight => {
+            const date = formatDate(highlight[0]);
+            const name = highlight[1];
+            const content = highlight[2];
+            const method = highlight[3];
+            const extra = highlight[4];
+
+            html += `
+                <div class="highlight-card">
+                    <div class="highlight-header">
+                        <div class="highlight-name">${name}</div>
+                        <div class="highlight-date">${date}</div>
+                    </div>
+                    <div class="highlight-content">💡 ${content}</div>
+                    ${method ? `<span class="highlight-method">${method}</span>` : ''}
+                    ${extra ? `<div class="highlight-extra">💬 ${extra}</div>` : ''}
+                </div>
+            `;
+        });
+
+        // 顯示今日統計
+        html += `
+            <div style="text-align: center; padding: 30px; color: #666; font-size: 18px; font-weight: 700; border-top: 3px dashed #E0E0E0; margin-top: 20px;">
+                🎉 今日共有 ${todayHighlights.length} 位同學分享了亮點
+            </div>
+        `;
+    }
+
+    highlightsList.innerHTML = html;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+
+    // 處理 Google Sheets 的日期時間格式 (例如: "2026/1/9 下午 4:52:25")
+    // 先提取空格前的日期部分
+    const dateOnly = dateStr.trim().split(' ')[0];
+
+    // 嘗試解析不同的日期格式
+    let date = new Date(dateOnly);
+
+    // 如果日期無效，嘗試其他格式
+    if (isNaN(date.getTime())) {
+        // 嘗試解析 YYYY-MM-DD 或 YYYY/M/D 格式
+        const parts = dateOnly.split(/[-/]/);
+        if (parts.length === 3) {
+            date = new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+    }
+
+    // 檢查日期是否有效
+    if (isNaN(date.getTime())) {
+        return '-';
+    }
+
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+}
+
+// ============================================
+// 個人查詢
+// ============================================
+export function populateStudentSelect() {
+    const select = document.getElementById('studentSelect');
+    statsData.forEach(student => {
+        const option = document.createElement('option');
+        option.value = student[0];
+        option.textContent = student[0];
+        select.appendChild(option);
+    });
+}
+
+export function lookupStudent() {
+    const select = document.getElementById('studentSelect');
+    const studentName = select.value;
+
+    if (!studentName) {
+        alert('請選擇學員');
+        return;
+    }
+
+    const student = statsData.find(s => s[0] === studentName);
+    if (!student) {
+        alert('找不到該學員');
+        return;
+    }
+
+    const totalDays = student[1];
+    const consecutiveDays = student[2];
+    const lastDate = student[3];
+    const milestones = getMilestones(student);
+
+    // 從 highlightsData 過濾該學員的所有打卡記錄
+    const studentHighlights = highlightsData.filter(h => h[1] === studentName);
+
+    console.log(`${studentName} 的打卡記錄: ${studentHighlights.length} 筆`);
+
+    let highlightsHTML = '';
+    if (studentHighlights.length > 0) {
+        studentHighlights.forEach(highlight => {
+            const date = formatDate(highlight[0]);
+            const content = highlight[2];
+            const method = highlight[3];
+            const extra = highlight[4];
+
+            highlightsHTML += `
+                <div class="highlight-card" style="margin-bottom: 15px;">
+                    <div class="highlight-header">
+                        <div class="highlight-date" style="font-size: 20px; color: #FF6B35; font-weight: 900;">📅 ${date}</div>
+                    </div>
+                    <div class="highlight-content" style="font-size: 19px;">💡 ${content}</div>
+                    ${method ? `<span class="highlight-method" style="font-size: 15px;">${method}</span>` : ''}
+                    ${extra ? `<div class="highlight-extra" style="font-size: 16px;">💬 ${extra}</div>` : ''}
+                </div>
+            `;
+        });
+    } else {
+        highlightsHTML = '<div style="text-align: center; padding: 40px; color: #999; font-size: 18px;">尚無打卡記錄</div>';
+    }
+
+    const html = `
+        <div class="personal-stats">
+            <div class="personal-stat-box">
+                <div class="personal-stat-label">累計打卡天數</div>
+                <div class="personal-stat-value">${totalDays} 天</div>
+            </div>
+            <div class="personal-stat-box">
+                <div class="personal-stat-label">連續打卡天數</div>
+                <div class="personal-stat-value">🔥 ${consecutiveDays} 天</div>
+            </div>
+            <div class="personal-stat-box">
+                <div class="personal-stat-label">最近打卡日期</div>
+                <div class="personal-stat-value">${lastDate || '-'}</div>
+            </div>
+            <div class="personal-stat-box">
+                <div class="personal-stat-label">已達成里程碑</div>
+                <div class="personal-stat-value">${milestones}</div>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 30px; margin-bottom: 15px; font-size: 24px; font-weight: 900; color: #2C3E50; border-bottom: 3px solid #2C3E50; padding-bottom: 10px;">
+            📝 完整打卡記錄 (共 ${studentHighlights.length} 天)
+        </h3>
+        <div style="max-height: 600px; overflow-y: auto;">
+            ${highlightsHTML}
+        </div>
+    `;
+
+    document.getElementById('personalResult').innerHTML = html;
+}
