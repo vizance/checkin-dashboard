@@ -394,9 +394,11 @@ export function toggleStudentList() {
         console.log('展開學員列表 - 先重新渲染內容');
         renderTodayCheckinStatus();
 
-        // 展開
-        console.log('設定 display: block');
+        // 展開 - 明確設定所有必要屬性
+        console.log('設定 display: block 並重置動畫屬性');
         container.style.display = 'block';
+        container.style.opacity = '1';
+        container.style.transform = 'none';
         icon.textContent = '▲';
         buttonText.textContent = '收起學員列表';
 
@@ -468,6 +470,8 @@ export function toggleStudentList() {
         container.classList.add('collapsing');
         setTimeout(() => {
             container.style.display = 'none';
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(-10px)';
             container.classList.remove('collapsing');
         }, 300);
         icon.textContent = '▼';
