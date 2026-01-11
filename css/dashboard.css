@@ -155,8 +155,28 @@
             color: #CCC;
         }
 
+        .info-update-time {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            line-height: 1.4;
+        }
+
         .info-update-time strong {
             color: #FF6B35;
+        }
+
+        .info-note {
+            font-size: 13px;
+            color: #999;
+            font-weight: 600;
+            font-style: italic;
+        }
+
+        .info-item-update {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
         }
 
         .context-info-bar strong {
@@ -311,6 +331,36 @@
             flex-direction: column;
         }
 
+        /* 手繪風格滾動條 - 三欄佈局 */
+        .today-checkin-status::-webkit-scrollbar,
+        .leaderboard::-webkit-scrollbar,
+        .highlights::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .today-checkin-status::-webkit-scrollbar-track,
+        .leaderboard::-webkit-scrollbar-track,
+        .highlights::-webkit-scrollbar-track {
+            background: #F0F0F0;
+            border: 2px solid #2C3E50;
+            border-radius: 10px;
+            margin: 8px 0;
+        }
+
+        .today-checkin-status::-webkit-scrollbar-thumb,
+        .leaderboard::-webkit-scrollbar-thumb,
+        .highlights::-webkit-scrollbar-thumb {
+            background: #FF6B35;
+            border: 2px solid #2C3E50;
+            border-radius: 10px;
+        }
+
+        .today-checkin-status::-webkit-scrollbar-thumb:hover,
+        .leaderboard::-webkit-scrollbar-thumb:hover,
+        .highlights::-webkit-scrollbar-thumb:hover {
+            background: #E65100;
+        }
+
         /* 排行榜 - 手繪風格 */
         .leaderboard {
             background: white;
@@ -318,6 +368,9 @@
             border-radius: 8px;
             padding: 25px;
             box-shadow: 6px 6px 0px #2C3E50;
+            max-height: 650px;
+            overflow-y: auto;
+            position: relative;
         }
 
         .leaderboard h2,
@@ -453,6 +506,9 @@
             border-radius: 8px;
             padding: 25px;
             box-shadow: 6px 6px 0px #2C3E50;
+            max-height: 650px;
+            overflow-y: auto;
+            position: relative;
         }
 
         .highlight-card {
@@ -1028,6 +1084,9 @@
             border-radius: 8px;
             padding: 25px;
             box-shadow: 6px 6px 0px #2C3E50;
+            max-height: 650px;
+            overflow-y: auto;
+            position: relative;
         }
 
         .today-checkin-status h2 {
@@ -1479,6 +1538,14 @@
                 min-height: auto;
             }
 
+            /* 手機版移除高度限制 */
+            .today-checkin-status,
+            .leaderboard,
+            .highlights {
+                max-height: none;
+                overflow-y: visible;
+            }
+
             .checkin-cta-button {
                 padding: 18px 30px;
                 font-size: 20px;
@@ -1497,10 +1564,27 @@
                 flex-direction: column;
                 gap: 10px;
                 font-size: 14px;
+                padding: 15px 20px;
             }
 
             .info-divider {
                 display: none;
+            }
+
+            .info-item {
+                text-align: center;
+            }
+
+            .info-item-update {
+                align-items: center;
+            }
+
+            .info-update-time {
+                text-align: center;
+            }
+
+            .info-note {
+                font-size: 12px;
             }
 
             .stats-banner {
