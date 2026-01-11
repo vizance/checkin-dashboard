@@ -366,92 +366,28 @@ export function renderTodayCheckinStatus() {
 // 切換學員列表顯示（改善版：加入動畫與滾動）
 // ============================================
 export function toggleStudentList() {
-    console.log('toggleStudentList 被呼叫');
-
     const container = document.getElementById('studentAvatarsContainer');
     const icon = document.getElementById('toggleIcon');
     const buttonText = document.getElementById('toggleText');
 
-    console.log('DOM 元素檢查:', {
-        container: container ? '找到' : '未找到',
-        icon: icon ? '找到' : '未找到',
-        buttonText: buttonText ? '找到' : '未找到',
-        currentDisplay: container ? container.style.display : 'N/A'
-    });
-
     // 檢查必要元素是否存在
     if (!container || !icon || !buttonText) {
-        console.error('toggleStudentList: 找不到必要的 DOM 元素', {
-            container: !!container,
-            icon: !!icon,
-            buttonText: !!buttonText
-        });
+        console.error('toggleStudentList: 找不到必要的 DOM 元素');
         return;
     }
 
     if (container.style.display === 'none' || !container.style.display) {
         // 展開前先確保內容已渲染
-        console.log('展開學員列表 - 先重新渲染內容');
         renderTodayCheckinStatus();
 
         // 展開 - 明確設定所有必要屬性
-        console.log('設定 display: block 並重置動畫屬性');
         container.style.display = 'block';
         container.style.opacity = '1';
         container.style.transform = 'none';
         icon.textContent = '▲';
         buttonText.textContent = '收起學員列表';
 
-        // 詳細檢查容器狀態
-        setTimeout(() => {
-            const computedStyle = window.getComputedStyle(container);
-            const checkedContainer = document.getElementById('checkedStudents');
-            const uncheckedContainer = document.getElementById('uncheckedStudents');
-
-            console.log('=== 容器狀態檢查 ===', {
-                '主容器 display': container.style.display,
-                '主容器 computed display': computedStyle.display,
-                '主容器 visibility': computedStyle.visibility,
-                '主容器 opacity': computedStyle.opacity,
-                '主容器 height': computedStyle.height,
-                '主容器 max-height': computedStyle.maxHeight,
-                '主容器 overflow': computedStyle.overflow,
-                '主容器 innerHTML長度': container.innerHTML.length,
-                '主容器 子元素數量': container.children.length,
-                '主容器 位置': container.getBoundingClientRect(),
-                '已打卡容器 innerHTML長度': checkedContainer ? checkedContainer.innerHTML.length : 'N/A',
-                '未打卡容器 innerHTML長度': uncheckedContainer ? uncheckedContainer.innerHTML.length : 'N/A'
-            });
-
-            // 檢查內容
-            if (container.innerHTML.length === 0) {
-                console.error('⚠️ 容器沒有內容！');
-            } else {
-                console.log('✓ 容器有內容，前 300 字元:', container.innerHTML.substring(0, 300));
-            }
-
-            // 檢查是否在可視範圍內
-            const rect = container.getBoundingClientRect();
-            const isVisible = (
-                rect.top >= 0 &&
-                rect.left >= 0 &&
-                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-            );
-            console.log('容器是否在可視範圍內:', isVisible);
-            if (!isVisible) {
-                console.log('容器不在可視範圍內，位置:', {
-                    top: rect.top,
-                    bottom: rect.bottom,
-                    left: rect.left,
-                    right: rect.right,
-                    windowHeight: window.innerHeight,
-                    windowWidth: window.innerWidth
-                });
-            }
-        }, 50);
-
-        // 平滑滾動到容器（延遲一點，等動畫開始）
+        // 平滑滾動到容器
         setTimeout(() => {
             container.scrollIntoView({
                 behavior: 'smooth',
@@ -459,14 +395,13 @@ export function toggleStudentList() {
             });
         }, 100);
 
-        // 加入展開動畫class
+        // 加入展開動畫 class
         container.classList.add('expanding');
         setTimeout(() => {
             container.classList.remove('expanding');
         }, 300);
     } else {
         // 收起
-        console.log('收起學員列表');
         container.classList.add('collapsing');
         setTimeout(() => {
             container.style.display = 'none';
@@ -477,8 +412,6 @@ export function toggleStudentList() {
         icon.textContent = '▼';
         buttonText.textContent = '查看學員列表';
     }
-
-    console.log('toggleStudentList 執行完成');
 }
 
 // ============================================
