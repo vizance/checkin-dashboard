@@ -52,7 +52,9 @@ export function updateDateTime() {
     const minutes = now.getMinutes().toString().padStart(2, '0');
 
     const timeString = `${year}/${month}/${day} ${hours}:${minutes}`;
-    const element = document.getElementById('currentDateTime');
+
+    // 更新到內層的 strong 元素（使用者修改了 HTML 結構）
+    const element = document.getElementById('currentDateTimeValue');
     if (element) {
         element.textContent = timeString;
     }
