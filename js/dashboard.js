@@ -25,6 +25,9 @@ export function renderStatsBanner() {
     // 更新總學員數
     document.getElementById('totalStudents').textContent = totalStudents;
 
+    // 更新目前時間
+    updateDateTime();
+
     // 更新今日打卡狀況
     document.getElementById('todayCheckins').textContent = todayCheckins;
     document.getElementById('todayCheckinsTotal').textContent = totalStudents;
@@ -35,6 +38,24 @@ export function renderStatsBanner() {
     progressBar.style.width = todayRate + '%';
 
     console.log(`Stats Banner: ${totalStudents} 位學員, 今日 ${todayCheckins} 人打卡 (${todayRate}%)`);
+}
+
+/**
+ * 更新目前日期時間
+ */
+export function updateDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+
+    const timeString = `${year}/${month}/${day} ${hours}:${minutes}`;
+    const element = document.getElementById('currentDateTime');
+    if (element) {
+        element.textContent = timeString;
+    }
 }
 
 function getTodayCheckedStudents() {

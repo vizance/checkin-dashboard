@@ -29,51 +29,34 @@
             <p>35 天養成習慣，我們一起見證彼此的成長！</p>
         </div>
 
-        <!-- 刷新時間提示 -->
-        <div class="refresh-notice">
-            <span class="refresh-icon"> ⏰ </span>
-            <span class="refresh-text">
-                資料更新時間：每日
-                <strong>08:00</strong> /
-                <strong>14:00</strong> /
-                <strong>23:00</strong>
-            </span>
-            <span class="refresh-divider">｜</span>
-            <span class="refresh-message"> 在這些美好時刻，回來見證彼此的成長吧！</span>
-            <span class="refresh-divider">｜</span>
-            <div class="checkin-container">
-                <div class="speech-bubble">
-                    你今天打卡了嗎？還沒的話，<a href="https://forms.gle/AnUzSCAU6y9LkFVv6" target="_blank">在這裡打卡</a>
-                </div>
+        <!-- 每日打卡 CTA - 最重要的行動呼籲 -->
+        <div class="primary-cta-section">
+            <a href="https://forms.gle/AnUzSCAU6y9LkFVv6" target="_blank" class="checkin-cta-button">
+                <span class="cta-emoji">✅</span>
+                <span class="cta-text">你今天打卡了嗎？點我立即打卡！</span>
+                <span class="cta-arrow">→</span>
+            </a>
+        </div>
+
+        <!-- 情境資訊列（整合時間、夥伴數、系統資訊） -->
+        <div class="context-info-bar">
+            <div class="info-item">
+                <span class="info-icon">📅</span>
+                <span id="currentDateTime">YYYY/MM/DD HH:MM</span>
+            </div>
+            <span class="info-divider">｜</span>
+            <div class="info-item">
+                <span class="info-icon">👥</span>
+                <span>挑戰夥伴：<strong id="totalStudents">-</strong> 人</span>
+            </div>
+            <span class="info-divider">｜</span>
+            <div class="info-item">
+                <span class="info-icon">⏰</span>
+                <span class="info-update-time">資料更新：<strong>08:00</strong> / <strong>14:00</strong> / <strong>23:00</strong></span>
             </div>
         </div>
 
-        <!-- 區塊 1: 整體進度看板 -->
-        <div class="stats-banner">
-            <div class="stat-card">
-                <div class="stat-icon"> 👥 </div>
-                <div class="stat-label"> 挑戰夥伴 </div>
-                <div class="stat-value"><span id="totalStudents">-</span> 人 </div>
-                <div class="stat-sub"> 一起挑戰中 </div>
-            </div>
-
-            <div class="stat-card stat-card-wide">
-                <div class="stat-icon"> ✅ </div>
-                <div class="stat-label"> 今日打卡狀況 </div>
-                <div class="stat-checkin-info">
-                    <div class="checkin-numbers">
-                        <span class="checkin-count" id="todayCheckins">-</span>
-                        <span class="checkin-separator">/</span>
-                        <span class="checkin-total" id="todayCheckinsTotal">-</span>
-                        <span class="checkin-unit"> 人 </span>
-                        <span class="checkin-rate">(<span id="todayRateInline">-</span>%)</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="todayProgress" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- 移除此處的今日打卡狀況，將整合到下方三欄佈局中 -->
 
         <!-- 35 天挑戰進度 -->
         <div class="heatmap-container">
@@ -159,71 +142,94 @@
         <!-- Tooltip for heatmap -->
         <div id="heatmapTooltip" class="heatmap-tooltip"></div>
 
-        <!-- 今日打卡動態 -->
-        <div class="today-checkin-status">
-            <h2>
-                <span> 今日打卡動態 </span>
-                <button class="refresh-button" onclick="refreshTodayStatus()"> 🔄 立即刷新 </button>
-            </h2>
+        <!-- 三欄核心資訊區域 -->
+        <div class="three-column-layout">
+            <!-- 今日打卡動態 -->
+            <div class="today-checkin-status">
+                <h2>
+                    <span class="section-icon">🔥</span>
+                    <span class="section-title">今日打卡動態</span>
+                </h2>
 
-            <div class="checkin-stats-row">
-                <div class="checkin-stat-box checked">
-                    <div class="checkin-stat-label"> ✅ 已打卡 </div>
-                    <div class="checkin-stat-value" id="todayCheckedCount">-</div>
+                <!-- 打卡進度條 -->
+                <div class="today-progress-section">
+                    <div class="checkin-numbers-compact">
+                        <span class="checkin-count" id="todayCheckins">-</span>
+                        <span class="checkin-separator">/</span>
+                        <span class="checkin-total" id="todayCheckinsTotal">-</span>
+                        <span class="checkin-unit">人</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="todayProgress" style="width: 0%"></div>
+                    </div>
+                    <div class="checkin-rate-text">
+                        打卡率：<strong><span id="todayRateInline">-</span>%</strong>
+                    </div>
                 </div>
-                <div class="checkin-stat-box unchecked">
-                    <div class="checkin-stat-label"> ⏸️ 未打卡 </div>
-                    <div class="checkin-stat-value" id="todayUncheckedCount">-</div>
+
+                <!-- 已打卡/未打卡統計 -->
+                <div class="checkin-stats-row">
+                    <div class="checkin-stat-box checked">
+                        <div class="checkin-stat-label">✅ 已打卡</div>
+                        <div class="checkin-stat-value" id="todayCheckedCount">-</div>
+                    </div>
+                    <div class="checkin-stat-box unchecked">
+                        <div class="checkin-stat-label">⏸️ 未打卡</div>
+                        <div class="checkin-stat-value" id="todayUncheckedCount">-</div>
+                    </div>
+                </div>
+
+                <!-- 刷新按鈕 -->
+                <button class="refresh-button-compact" onclick="refreshTodayStatus()">🔄 立即刷新</button>
+
+                <!-- 學員列表切換 -->
+                <div style="margin-top: 15px;">
+                    <span class="toggle-section" onclick="toggleStudentList()">
+                        <span id="toggleIcon">▼</span>
+                        <span style="margin-left: 8px;">查看學員列表</span>
+                    </span>
+                </div>
+
+                <div id="studentAvatarsContainer" style="display: none; margin-top: 15px;">
+                    <h3 class="student-list-header checked-header">
+                        ✅ 已打卡 (<span id="checkedListCount">0</span>)
+                    </h3>
+                    <div class="student-avatars" id="checkedStudents"></div>
+
+                    <h3 class="student-list-header unchecked-header">
+                        ⏸️ 未打卡 (<span id="uncheckedListCount">0</span>)
+                    </h3>
+                    <div class="student-avatars" id="uncheckedStudents"></div>
                 </div>
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <span class="toggle-section" onclick="toggleStudentList()">
-                    <span id="toggleIcon">▼</span>
-                    <span style="margin-left: 8px;"> 查看學員列表 </span>
-                </span>
-            </div>
-
-            <div id="studentAvatarsContainer" style="display: none;">
-                <h3
-                    style="font-size: 20px; font-weight: 900; margin-bottom: 15px; color: #4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">
-                    ✅ 已打卡 (<span id="checkedListCount">0</span>)
-                </h3>
-                <div class="student-avatars" id="checkedStudents"></div>
-
-                <h3
-                    style="font-size: 20px; font-weight: 900; margin: 25px 0 15px 0; color: #FF9800; border-bottom: 2px solid #FF9800; padding-bottom: 10px;">
-                    ⏸️ 未打卡 (<span id="uncheckedListCount">0</span>)
-                </h3>
-                <div class="student-avatars" id="uncheckedStudents"></div>
-            </div>
-        </div>
-
-        <!-- 主要內容區域 -->
-        <div class="main-content">
-            <!-- 區塊 2: 連續打卡王 -->
+            <!-- 連續打卡王 -->
             <div class="leaderboard">
                 <h2>
-                    <span class="section-title"> 連續打卡王 </span>
-                    <a id="statsSheetLink" target="_blank"
-                        style="font-size: 15px; color: #FF6B35; text-decoration: none; font-weight: 700;">
+                    <span class="section-icon">🏅</span>
+                    <span class="section-title">連續打卡王</span>
+                </h2>
+                <div id="leaderboardList" class="loading">載入中</div>
+                <div class="section-footer">
+                    <a id="statsSheetLink" target="_blank" class="view-all-link">
                         📊 查看全部
                     </a>
-                </h2>
-                <div id="leaderboardList" class="loading"> 載入中 </div>
+                </div>
             </div>
 
-            <!-- 區塊 3: 每日亮點牆 -->
+            <!-- 每日亮點牆 -->
             <div class="highlights">
                 <h2>
-                    <span class="section-title"> 每日亮點牆 <span
-                            style="font-size: 18px; color: #999; margin-left: 8px;">（今日）</span></span>
-                    <a id="highlightsSheetLink" target="_blank"
-                        style="font-size: 15px; color: #FF6B35; text-decoration: none; font-weight: 700;">
+                    <span class="section-icon">💡</span>
+                    <span class="section-title">每日亮點牆</span>
+                    <span class="section-subtitle">（今日）</span>
+                </h2>
+                <div id="highlightsList" class="loading">載入中</div>
+                <div class="section-footer">
+                    <a id="highlightsSheetLink" target="_blank" class="view-all-link">
                         📝 歷史記錄
                     </a>
-                </h2>
-                <div id="highlightsList" class="loading"> 載入中 </div>
+                </div>
             </div>
         </div>
 

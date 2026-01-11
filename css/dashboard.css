@@ -53,166 +53,119 @@
             transform: rotate(-1deg);
         }
 
-        /* 刷新時間提示 */
-        .refresh-notice {
+        /* 主要 CTA 按鈕區塊 */
+        .primary-cta-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .checkin-cta-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8C52 100%);
+            color: white;
+            border: 4px solid #2C3E50;
+            border-radius: 12px;
+            box-shadow: 6px 6px 0px #2C3E50;
+            font-size: 24px;
+            font-weight: 900;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            animation: ctaPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes ctaPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .checkin-cta-button:hover {
+            transform: translate(-3px, -3px) scale(1.05);
+            box-shadow: 9px 9px 0px #2C3E50;
+            animation: none;
+        }
+
+        .checkin-cta-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 3px 3px 0px #2C3E50;
+        }
+
+        .cta-emoji {
+            font-size: 32px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .cta-text {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        .cta-arrow {
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        /* 情境資訊列 */
+        .context-info-bar {
             display: flex;
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 8px;
-            padding: 15px 20px;
-            margin: -15px auto 30px;
-            max-width: 900px;
-            background: #FFF9F0;
-            border: 3px solid #FFE0B2;
+            gap: 15px;
+            padding: 12px 20px;
+            margin: 0 auto 30px;
+            width: 100%;
+            max-width: 1000px;
+            background: #F5F5F5;
+            border: 3px solid #DDD;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             color: #666;
             font-weight: 700;
-            box-shadow: 3px 3px 0px rgba(255, 224, 178, 0.5);
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
         }
 
-        .refresh-icon {
-            font-size: 20px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            50% {
-                opacity: 0.7;
-                transform: scale(1.1);
-            }
-        }
-
-        .refresh-text {
-            color: #555;
-        }
-
-        .refresh-text strong {
-            color: #FF6B35;
-            font-weight: 900;
-            padding: 0 2px;
-        }
-
-        .refresh-divider {
-            color: #CCC;
-            margin: 0 4px;
-        }
-
-        .refresh-message {
-            color: #888;
-            font-style: italic;
-        }
-
-        .checkin-container {
+        .info-item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-left: 10px;
+            gap: 6px;
         }
 
-        /* 移除 stick-figure 樣式 */
-
-        .speech-bubble {
-            position: relative;
-            background: #fff;
-            border: 3px solid #2C3E50;
-            border-radius: 50px;
-            /* 更圓潤 */
-            padding: 12px 25px;
-            /* 加大內距 */
+        .info-icon {
             font-size: 18px;
-            /* 加大字體 */
-            font-weight: 900;
-            color: #2C3E50;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
         }
 
-        .speech-bubble:hover {
-            transform: scale(1.02);
-            box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.15);
+        .info-divider {
+            color: #CCC;
         }
 
-        /* 移除原本的對話框箭頭 */
-        .speech-bubble::before,
-        .speech-bubble::after {
-            display: none;
-        }
-
-        .speech-bubble a {
+        .info-update-time strong {
             color: #FF6B35;
-            text-decoration: none;
-            border-bottom: 3px solid #FF6B35;
-            /* 加粗底線 */
-            padding-bottom: 2px;
-            transition: all 0.2s ease;
-            display: inline-block;
-            margin-left: 5px;
         }
 
-        .speech-bubble a:hover {
-            color: #E65100;
-            border-bottom-color: #E65100;
-            transform: rotate(-2deg) scale(1.1);
-        }
-
-        /* 手機版 RWD */
-        @media (max-width: 768px) {
-            .refresh-notice {
-                flex-direction: column;
-                gap: 15px;
-                padding: 20px;
-                text-align: center;
-            }
-
-            .refresh-divider {
-                display: none;
-                /* 手機版隱藏分隔線 */
-            }
-
-            .checkin-container {
-                margin-left: 0;
-                width: 100%;
-            }
-
-            .speech-bubble {
-                width: 100%;
-                font-size: 16px;
-                padding: 15px;
-                border-radius: 12px;
-                /* 手機版稍微方一點，節省空間 */
-                box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
-            }
-
-            .speech-bubble a {
-                display: block;
-                /* 手機版讓連結換行，更容易點擊 */
-                margin-top: 5px;
-                margin-left: 0;
-                width: fit-content;
-                margin: 5px auto 0;
-            }
-        }
-
-        .speech-bubble a:hover {
-            color: #E65100;
-            border-bottom-color: #E65100;
-            transform: rotate(-2deg) scale(1.1);
+        .context-info-bar strong {
+            color: #2C3E50;
         }
 
         /* 統計卡片 - 手繪風格 */
         .stats-banner {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 25px;
+            display: block;
             margin-bottom: 30px;
         }
 
@@ -344,12 +297,18 @@
                     rgba(255, 255, 255, 0.1) 20px);
         }
 
-        /* 主要內容區域 */
-        .main-content {
+        /* 三欄核心資訊區域 */
+        .three-column-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 25px;
             margin-bottom: 30px;
+        }
+
+        .three-column-layout > * {
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 排行榜 - 手繪風格 */
@@ -359,36 +318,61 @@
             border-radius: 8px;
             padding: 25px;
             box-shadow: 6px 6px 0px #2C3E50;
-            height: fit-content;
         }
 
-        .leaderboard h2 {
-            font-size: 32px;
+        .leaderboard h2,
+        .highlights h2 {
+            font-size: 28px;
             font-weight: 900;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             color: #2C3E50;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
             border-bottom: 4px solid #2C3E50;
-            position: relative;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: nowrap;
+            gap: 8px;
         }
 
-        .leaderboard h2::before {
-            content: '🏅';
-            margin-right: 10px;
-            font-size: 34px;
+        .section-icon {
+            font-size: 30px;
         }
 
-        .leaderboard h2 .section-title {
-            flex: 0 0 auto;
+        .section-title {
+            font-size: 28px;
+            flex: 1;
         }
 
-        .leaderboard h2 a {
-            flex: 0 0 auto;
-            white-space: nowrap;
+        .section-subtitle {
+            font-size: 16px;
+            color: #999;
+            font-weight: 700;
+        }
+
+        .section-footer {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 2px solid #F0F0F0;
+            text-align: center;
+        }
+
+        .view-all-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #F8F9FA;
+            color: #FF6B35;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            border: 2px solid #FF6B35;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .view-all-link:hover {
+            background: #FF6B35;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 2px 2px 0px #2C3E50;
         }
 
         .leaderboard-item {
@@ -469,45 +453,6 @@
             border-radius: 8px;
             padding: 25px;
             box-shadow: 6px 6px 0px #2C3E50;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .highlights h2 {
-            font-size: 32px;
-            font-weight: 900;
-            margin-bottom: 25px;
-            color: #2C3E50;
-            padding-bottom: 15px;
-            padding-top: 5px;
-            border-bottom: 4px solid #2C3E50;
-            position: sticky;
-            top: -25px;
-            background: white;
-            z-index: 10;
-            margin-left: -25px;
-            margin-right: -25px;
-            padding-left: 25px;
-            padding-right: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: nowrap;
-        }
-
-        .highlights h2::before {
-            content: '💡';
-            margin-right: 10px;
-            font-size: 34px;
-        }
-
-        .highlights h2 .section-title {
-            flex: 0 0 auto;
-        }
-
-        .highlights h2 a {
-            flex: 0 0 auto;
-            white-space: nowrap;
         }
 
         .highlight-card {
@@ -1083,25 +1028,111 @@
             border-radius: 8px;
             padding: 25px;
             box-shadow: 6px 6px 0px #2C3E50;
-            margin-bottom: 30px;
         }
 
         .today-checkin-status h2 {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 900;
             margin-bottom: 20px;
             color: #2C3E50;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
             border-bottom: 4px solid #2C3E50;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 8px;
         }
 
-        .today-checkin-status h2::before {
-            content: '🔥';
-            margin-right: 10px;
-            font-size: 34px;
+        /* 今日進度區塊 */
+        .today-progress-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #FAFAFA;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+        }
+
+        .checkin-numbers-compact {
+            font-size: 36px;
+            font-weight: 900;
+            color: #2C3E50;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .checkin-numbers-compact .checkin-count {
+            color: #4CAF50;
+        }
+
+        .checkin-numbers-compact .checkin-unit {
+            font-size: 20px;
+            color: #666;
+        }
+
+        .checkin-rate-text {
+            text-align: center;
+            font-size: 16px;
+            color: #666;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .checkin-rate-text strong {
+            color: #FF6B35;
+        }
+
+        /* 刷新按鈕（緊湊版） */
+        .refresh-button-compact {
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 18px;
+            font-weight: 900;
+            background: #FF6B35;
+            color: white;
+            border: 3px solid #2C3E50;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px #2C3E50;
+            transition: all 0.2s ease;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        .refresh-button-compact:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #2C3E50;
+        }
+
+        .refresh-button-compact:active {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px #2C3E50;
+        }
+
+        .refresh-button-compact:disabled {
+            background: #CCC;
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+        }
+
+        /* 學員列表標題 */
+        .student-list-header {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 20px 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid currentColor;
+        }
+
+        .student-list-header.checked-header {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .student-list-header.unchecked-header {
+            color: #FF9800;
+            border-bottom-color: #FF9800;
         }
 
         .checkin-stats-row {
@@ -1440,8 +1471,36 @@
 
         /* 響應式設計 */
         @media (max-width: 768px) {
-            .main-content {
+            .three-column-layout {
                 grid-template-columns: 1fr;
+            }
+
+            .three-column-layout > * {
+                min-height: auto;
+            }
+
+            .checkin-cta-button {
+                padding: 18px 30px;
+                font-size: 20px;
+                gap: 10px;
+            }
+
+            .cta-emoji {
+                font-size: 28px;
+            }
+
+            .cta-arrow {
+                font-size: 24px;
+            }
+
+            .context-info-bar {
+                flex-direction: column;
+                gap: 10px;
+                font-size: 14px;
+            }
+
+            .info-divider {
+                display: none;
             }
 
             .stats-banner {
@@ -1499,24 +1558,9 @@
             }
 
             /* 手機版連結文字調整 */
-            .leaderboard h2,
-            .highlights h2 {
-                font-size: 26px;
-            }
-
-            .leaderboard h2 .section-title,
-            .highlights h2 .section-title {
-                font-size: 26px;
-            }
-
-            .leaderboard h2 a,
-            .highlights h2 a {
+            .view-all-link {
                 font-size: 12px;
-                padding: 6px 10px;
-            }
-
-            .highlights h2 {
-                gap: 10px;
+                padding: 8px 16px;
             }
 
             /* 挑戰進度手機版 */
@@ -1599,17 +1643,27 @@
             }
 
             /* 今日打卡動態手機版 */
-            .today-checkin-status h2 {
-                font-size: 26px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
+            .today-checkin-status h2,
+            .leaderboard h2,
+            .highlights h2 {
+                font-size: 24px;
             }
 
-            .refresh-button {
-                width: 100%;
-                font-size: 18px;
-                padding: 14px 28px;
+            .section-icon {
+                font-size: 26px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .checkin-numbers-compact {
+                font-size: 32px;
+            }
+
+            .refresh-button-compact {
+                font-size: 16px;
+                padding: 12px 20px;
             }
 
             .toggle-section {
