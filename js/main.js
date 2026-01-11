@@ -36,19 +36,14 @@ window.onload = function() {
     }, 60 * 1000); // 1 分鐘
 };
 
-// 將 refreshTodayStatus 暴露給全局，供 HTML 的 onclick 使用
-import { refreshTodayStatus } from './dashboard.js';
+// 將必要的函數暴露給全局，供 HTML 的 onclick 使用
+import { refreshTodayStatus, lookupStudent } from './dashboard.js';
 window.refreshTodayStatus = refreshTodayStatus;
-
-// 將其他必要的函數暴露給全局
-import { toggleStudentList, lookupStudent } from './dashboard.js';
-window.toggleStudentList = toggleStudentList;
 window.lookupStudent = lookupStudent;
 
 // 確認函數已掛載
 console.log('全局函數掛載完成:', {
     refreshTodayStatus: typeof window.refreshTodayStatus,
-    toggleStudentList: typeof window.toggleStudentList,
     lookupStudent: typeof window.lookupStudent
 });
 

@@ -1198,19 +1198,6 @@
             overflow-y: auto;
             overflow-x: hidden;
             padding-right: 8px;
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-        }
-
-        /* 學員列表展開/收起動畫 - 改用 transition 更可控 */
-        #studentAvatarsContainer.expanding {
-            /* transition 已在上方設定，這裡只需要確保最終狀態 */
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        #studentAvatarsContainer.collapsing {
-            opacity: 0;
-            transform: translateY(-10px);
         }
 
         /* 學員列表滾動條 - 手繪風格（與三欄佈局一致） */
@@ -1361,43 +1348,6 @@
             box-shadow: 3px 3px 0px #999;
         }
 
-        .toggle-section {
-            cursor: pointer;
-            user-select: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 16px;
-            color: #2C3E50;
-            font-weight: 900;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #F8F9FA 0%, #E8E9EA 100%);
-            border: 3px solid #2C3E50;
-            border-radius: 8px;
-            box-shadow: 3px 3px 0px #2C3E50;
-            transition: all 0.25s ease;
-            width: 100%;
-        }
-
-        .toggle-section:hover {
-            background: linear-gradient(135deg, #FFE5D9 0%, #FFD5C9 100%);
-            color: #FF6B35;
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0px #2C3E50;
-        }
-
-        .toggle-section:active {
-            transform: translate(1px, 1px);
-            box-shadow: 2px 2px 0px #2C3E50;
-        }
-
-        /* 切換圖示動畫 */
-        .toggle-section #toggleIcon {
-            transition: transform 0.3s ease;
-            display: inline-block;
-            font-size: 14px;
-        }
 
         /* 個人查詢 */
         .personal-lookup {
