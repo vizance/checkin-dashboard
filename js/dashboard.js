@@ -368,8 +368,17 @@ export function renderTodayCheckinStatus() {
 export function toggleStudentList() {
     const container = document.getElementById('studentAvatarsContainer');
     const icon = document.getElementById('toggleIcon');
-    const toggleButton = document.querySelector('.toggle-section');
-    const buttonText = toggleButton.querySelector('span:last-child');
+    const buttonText = document.getElementById('toggleText');
+
+    // 檢查必要元素是否存在
+    if (!container || !icon || !buttonText) {
+        console.error('toggleStudentList: 找不到必要的 DOM 元素', {
+            container: !!container,
+            icon: !!icon,
+            buttonText: !!buttonText
+        });
+        return;
+    }
 
     if (container.style.display === 'none' || !container.style.display) {
         // 展開
