@@ -366,9 +366,18 @@ export function renderTodayCheckinStatus() {
 // 切換學員列表顯示（改善版：加入動畫與滾動）
 // ============================================
 export function toggleStudentList() {
+    console.log('toggleStudentList 被呼叫');
+
     const container = document.getElementById('studentAvatarsContainer');
     const icon = document.getElementById('toggleIcon');
     const buttonText = document.getElementById('toggleText');
+
+    console.log('DOM 元素檢查:', {
+        container: container ? '找到' : '未找到',
+        icon: icon ? '找到' : '未找到',
+        buttonText: buttonText ? '找到' : '未找到',
+        currentDisplay: container ? container.style.display : 'N/A'
+    });
 
     // 檢查必要元素是否存在
     if (!container || !icon || !buttonText) {
@@ -382,6 +391,7 @@ export function toggleStudentList() {
 
     if (container.style.display === 'none' || !container.style.display) {
         // 展開
+        console.log('展開學員列表');
         container.style.display = 'block';
         icon.textContent = '▲';
         buttonText.textContent = '收起學員列表';
@@ -401,6 +411,7 @@ export function toggleStudentList() {
         }, 300);
     } else {
         // 收起
+        console.log('收起學員列表');
         container.classList.add('collapsing');
         setTimeout(() => {
             container.style.display = 'none';
@@ -409,6 +420,8 @@ export function toggleStudentList() {
         icon.textContent = '▼';
         buttonText.textContent = '查看學員列表';
     }
+
+    console.log('toggleStudentList 執行完成');
 }
 
 // ============================================

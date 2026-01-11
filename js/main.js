@@ -45,3 +45,10 @@ import { toggleStudentList, lookupStudent } from './dashboard.js';
 window.toggleStudentList = toggleStudentList;
 window.lookupStudent = lookupStudent;
 
+// 確認函數已掛載
+console.log('全局函數掛載完成:', {
+    refreshTodayStatus: typeof window.refreshTodayStatus,
+    toggleStudentList: typeof window.toggleStudentList,
+    lookupStudent: typeof window.lookupStudent
+});
+
