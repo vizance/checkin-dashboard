@@ -361,44 +361,131 @@ export function renderTodayCheckinStatus() {
 }
 
 // ============================================
-// 切換學員列表顯示
+// 切換學員列表顯示（改善版：加入動畫與滾動）
 // ============================================
 export function toggleStudentList() {
     const container = document.getElementById('studentAvatarsContainer');
     const icon = document.getElementById('toggleIcon');
+    const toggleButton = document.querySelector('.toggle-section');
+    const buttonText = toggleButton.querySelector('span:last-child');
 
-    if (container.style.display === 'none') {
+    if (container.style.display === 'none' || !container.style.display) {
+        // 展開
         container.style.display = 'block';
         icon.textContent = '▲';
+        buttonText.textContent = '收起學員列表';
+
+        // 平滑滾動到容器（延遲一點，等動畫開始）
+        setTimeout(() => {
+            container.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }, 100);
+
+        // 加入展開動畫class
+        container.classList.add('expanding');
+        setTimeout(() => {
+            container.classList.remove('expanding');
+        }, 300);
     } else {
-        container.style.display = 'none';
+        // 收起
+        container.classList.add('collapsing');
+        setTimeout(() => {
+            container.style.display = 'none';
+            container.classList.remove('collapsing');
+        }, 300);
         icon.textContent = '▼';
+        buttonText.textContent = '查看學員列表';
     }
 }
 
 // ============================================
-// 立即刷新今日打卡狀態（不使用緩存）
+// 立即刷新今日打卡狀態（改善版：防濫用機制）
 // ============================================
+let refreshCooldown = false;
+let cooldownTimer = null;
+
 export async function refreshTodayStatus() {
     const { loadData } = await import('./data.js');
-    const button = document.querySelector('.refresh-button');
-    button.textContent = '⏳ 刷新中...';
+    const button = document.querySelector('.refresh-button-compact');
+
+    // 如果正在冷卻中，不執行
+    if (refreshCooldown) {
+        return;
+    }
+
+    // 開始冷卻
+    refreshCooldown = true;
     button.disabled = true;
+    button.classList.add('refreshing');
 
     try {
-        await loadData(false); // 強制從遠端載入
+        // 顯示刷新中
+        button.textContent = '⏳ 刷新中...';
+
+        // 強制從遠端載入
+        await loadData(false);
+
+        // 顯示完成狀態
         button.textContent = '✅ 刷新完成';
+        button.classList.remove('refreshing');
+        button.classList.add('success');
+
+        // 2 秒後開始倒數
         setTimeout(() => {
-            button.textContent = '🔄 立即刷新';
-            button.disabled = false;
-        }, 1500);
+            button.classList.remove('success');
+            startCooldown(button, 10); // 10 秒冷卻
+        }, 2000);
+
     } catch (error) {
+        console.error('刷新失敗:', error);
         button.textContent = '❌ 刷新失敗';
+        button.classList.remove('refreshing');
+        button.classList.add('error');
+
+        // 2 秒後開始倒數（失敗也要冷卻）
         setTimeout(() => {
-            button.textContent = '🔄 立即刷新';
-            button.disabled = false;
-        }, 1500);
+            button.classList.remove('error');
+            startCooldown(button, 5); // 失敗時較短的冷卻時間
+        }, 2000);
     }
+}
+
+/**
+ * 開始冷卻倒數
+ * @param {HTMLElement} button - 按鈕元素
+ * @param {number} seconds - 冷卻秒數
+ */
+function startCooldown(button, seconds) {
+    let remaining = seconds;
+
+    // 清除舊的計時器（如果有）
+    if (cooldownTimer) {
+        clearInterval(cooldownTimer);
+    }
+
+    // 更新按鈕文字
+    const updateButton = () => {
+        button.textContent = `⏰ 請稍候 ${remaining} 秒`;
+    };
+
+    updateButton();
+
+    // 每秒更新
+    cooldownTimer = setInterval(() => {
+        remaining--;
+
+        if (remaining <= 0) {
+            clearInterval(cooldownTimer);
+            cooldownTimer = null;
+            refreshCooldown = false;
+            button.disabled = false;
+            button.textContent = '🔄 立即刷新';
+        } else {
+            updateButton();
+        }
+    }, 1000);
 }
 
 // ============================================

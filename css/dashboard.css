@@ -1130,25 +1130,47 @@
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 3px 3px 0px #2C3E50;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             font-family: 'Noto Sans TC', sans-serif;
         }
 
-        .refresh-button-compact:hover {
+        .refresh-button-compact:hover:not(:disabled) {
             transform: translate(-2px, -2px);
             box-shadow: 5px 5px 0px #2C3E50;
         }
 
-        .refresh-button-compact:active {
+        .refresh-button-compact:active:not(:disabled) {
             transform: translate(1px, 1px);
             box-shadow: 2px 2px 0px #2C3E50;
         }
 
         .refresh-button-compact:disabled {
-            background: #CCC;
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.8;
             transform: none;
+        }
+
+        /* 刷新按鈕狀態 */
+        .refresh-button-compact.refreshing {
+            background: #FFA726;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .refresh-button-compact.success {
+            background: #4CAF50;
+        }
+
+        .refresh-button-compact.error {
+            background: #F44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
         }
 
         /* 學員列表標題 */
@@ -1168,6 +1190,63 @@
         .student-list-header.unchecked-header {
             color: #FF9800;
             border-bottom-color: #FF9800;
+        }
+
+        /* 學員列表容器 */
+        #studentAvatarsContainer {
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* 學員列表展開/收起動畫 */
+        #studentAvatarsContainer.expanding {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        #studentAvatarsContainer.collapsing {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* 學員列表內容區域滾動條 */
+        #studentAvatarsContainer::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #studentAvatarsContainer::-webkit-scrollbar-track {
+            background: #F5F5F5;
+            border-radius: 5px;
+        }
+
+        #studentAvatarsContainer::-webkit-scrollbar-thumb {
+            background: #CCC;
+            border-radius: 5px;
+        }
+
+        #studentAvatarsContainer::-webkit-scrollbar-thumb:hover {
+            background: #AAA;
         }
 
         .checkin-stats-row {
@@ -1301,27 +1380,37 @@
             user-select: none;
             display: inline-flex;
             align-items: center;
-            font-size: 18px;
+            justify-content: center;
+            gap: 8px;
+            font-size: 16px;
             color: #2C3E50;
             font-weight: 900;
-            padding: 14px 28px;
-            background: #F8F9FA;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #F8F9FA 0%, #E8E9EA 100%);
             border: 3px solid #2C3E50;
             border-radius: 8px;
             box-shadow: 3px 3px 0px #2C3E50;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
+            width: 100%;
         }
 
         .toggle-section:hover {
-            background: #FFE5D9;
+            background: linear-gradient(135deg, #FFE5D9 0%, #FFD5C9 100%);
             color: #FF6B35;
-            transform: translate(-1px, -1px);
-            box-shadow: 4px 4px 0px #2C3E50;
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #2C3E50;
         }
 
         .toggle-section:active {
             transform: translate(1px, 1px);
             box-shadow: 2px 2px 0px #2C3E50;
+        }
+
+        /* 切換圖示動畫 */
+        .toggle-section #toggleIcon {
+            transition: transform 0.3s ease;
+            display: inline-block;
+            font-size: 14px;
         }
 
         /* 個人查詢 */
@@ -1715,10 +1804,12 @@
             }
 
             .toggle-section {
-                width: 100%;
-                justify-content: center;
-                font-size: 16px;
-                padding: 12px 24px;
+                font-size: 15px;
+                padding: 12px 20px;
+            }
+
+            #studentAvatarsContainer {
+                max-height: 300px;
             }
 
             .student-avatars {

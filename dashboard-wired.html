@@ -183,12 +183,10 @@
                 <button class="refresh-button-compact" onclick="refreshTodayStatus()">🔄 立即刷新</button>
 
                 <!-- 學員列表切換 -->
-                <div style="margin-top: 15px;">
-                    <span class="toggle-section" onclick="toggleStudentList()">
-                        <span id="toggleIcon">▼</span>
-                        <span style="margin-left: 8px;">查看學員列表</span>
-                    </span>
-                </div>
+                <button class="toggle-section" onclick="toggleStudentList()" style="margin-top: 15px;">
+                    <span id="toggleIcon">▼</span>
+                    <span>查看學員列表</span>
+                </button>
 
                 <div id="studentAvatarsContainer" style="display: none; margin-top: 15px;">
                     <h3 class="student-list-header checked-header">
