@@ -135,60 +135,60 @@
         <!-- Tooltip for heatmap -->
         <div id="heatmapTooltip" class="heatmap-tooltip"></div>
 
-        <!-- 三欄核心資訊區域 -->
-        <div class="three-column-layout">
-            <!-- 今日打卡動態 -->
-            <div class="today-checkin-status">
-                <h2>
-                    <span class="section-icon"> 🔥 </span>
-                    <span class="section-title"> 今日打卡動態 </span>
-                </h2>
+        <!-- 今日打卡動態 - 獨立全寬顯示 -->
+        <div class="today-checkin-status">
+            <h2>
+                <span class="section-icon"> 🔥 </span>
+                <span class="section-title"> 今日打卡動態 </span>
+            </h2>
 
-                <!-- 打卡進度條 -->
-                <div class="today-progress-section">
-                    <div class="checkin-numbers-compact">
-                        <span class="checkin-count" id="todayCheckins">-</span>
-                        <span class="checkin-separator">/</span>
-                        <span class="checkin-total" id="todayCheckinsTotal">-</span>
-                        <span class="checkin-unit"> 人 </span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="todayProgress" style="width: 0%"></div>
-                    </div>
-                    <div class="checkin-rate-text">
-                        打卡率：<strong><span id="todayRateInline">-</span>%</strong>
-                    </div>
+            <!-- 打卡進度條 -->
+            <div class="today-progress-section">
+                <div class="checkin-numbers-compact">
+                    <span class="checkin-count" id="todayCheckins">-</span>
+                    <span class="checkin-separator">/</span>
+                    <span class="checkin-total" id="todayCheckinsTotal">-</span>
+                    <span class="checkin-unit"> 人 </span>
                 </div>
-
-                <!-- 已打卡 / 未打卡統計 -->
-                <div class="checkin-stats-row">
-                    <div class="checkin-stat-box checked">
-                        <div class="checkin-stat-label"> ✅ 已打卡 </div>
-                        <div class="checkin-stat-value" id="todayCheckedCount">-</div>
-                    </div>
-                    <div class="checkin-stat-box unchecked">
-                        <div class="checkin-stat-label"> ⏸️ 未打卡 </div>
-                        <div class="checkin-stat-value" id="todayUncheckedCount">-</div>
-                    </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="todayProgress" style="width: 0%"></div>
                 </div>
-
-                <!-- 刷新按鈕 -->
-                <button class="refresh-button-compact" onclick="refreshTodayStatus()"> 🔄 立即刷新 </button>
-
-                <!-- 學員列表 - 直接顯示 -->
-                <div id="studentAvatarsContainer" style="margin-top: 20px;">
-                    <h3 class="student-list-header checked-header">
-                        ✅ 已打卡 (<span id="checkedListCount">0</span>)
-                    </h3>
-                    <div class="student-avatars" id="checkedStudents"></div>
-
-                    <h3 class="student-list-header unchecked-header">
-                        ⏸️ 未打卡 (<span id="uncheckedListCount">0</span>)
-                    </h3>
-                    <div class="student-avatars" id="uncheckedStudents"></div>
+                <div class="checkin-rate-text">
+                    打卡率：<strong><span id="todayRateInline">-</span>%</strong>
                 </div>
             </div>
 
+            <!-- 已打卡 / 未打卡統計 -->
+            <div class="checkin-stats-row">
+                <div class="checkin-stat-box checked">
+                    <div class="checkin-stat-label"> ✅ 已打卡 </div>
+                    <div class="checkin-stat-value" id="todayCheckedCount">-</div>
+                </div>
+                <div class="checkin-stat-box unchecked">
+                    <div class="checkin-stat-label"> ⏸️ 未打卡 </div>
+                    <div class="checkin-stat-value" id="todayUncheckedCount">-</div>
+                </div>
+            </div>
+
+            <!-- 刷新按鈕 -->
+            <button class="refresh-button-compact" onclick="refreshTodayStatus()"> 🔄 立即刷新 </button>
+
+            <!-- 學員列表 - 直接顯示 -->
+            <div id="studentAvatarsContainer" style="margin-top: 20px;">
+                <h3 class="student-list-header checked-header">
+                    ✅ 已打卡 (<span id="checkedListCount">0</span>)
+                </h3>
+                <div class="student-avatars" id="checkedStudents"></div>
+
+                <h3 class="student-list-header unchecked-header">
+                    ⏸️ 未打卡 (<span id="uncheckedListCount">0</span>)
+                </h3>
+                <div class="student-avatars" id="uncheckedStudents"></div>
+            </div>
+        </div>
+
+        <!-- 兩欄資訊區域 -->
+        <div class="two-column-layout">
             <!-- 連續打卡王 -->
             <div class="leaderboard">
                 <h2>

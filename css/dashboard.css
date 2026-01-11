@@ -293,15 +293,15 @@
                     rgba(255, 255, 255, 0.1) 20px);
         }
 
-        /* 三欄核心資訊區域 */
-        .three-column-layout {
+        /* 兩欄資訊區域（連續打卡王 + 每日亮點牆） */
+        .two-column-layout {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 25px;
             margin-bottom: 30px;
         }
 
-        .three-column-layout > * {
+        .two-column-layout > * {
             min-height: 500px;
             display: flex;
             flex-direction: column;
@@ -1053,15 +1053,14 @@
             background: #4CAF50;
         }
 
-        /* 今日打卡動態 */
+        /* 今日打卡動態 - 獨立全寬顯示 */
         .today-checkin-status {
             background: white;
             border: 4px solid #2C3E50;
             border-radius: 8px;
             padding: 25px;
             box-shadow: 6px 6px 0px #2C3E50;
-            max-height: 650px;
-            overflow-y: auto;
+            margin-bottom: 30px;
             position: relative;
         }
 
@@ -1192,10 +1191,8 @@
             border-bottom-color: #FF9800;
         }
 
-        /* 學員列表容器 */
+        /* 學員列表容器 - 移除高度限制，完整顯示 */
         #studentAvatarsContainer {
-            max-height: 500px;
-            overflow-y: auto;
             overflow-x: hidden;
             padding-right: 8px;
         }
@@ -1531,16 +1528,15 @@
 
         /* 響應式設計 */
         @media (max-width: 768px) {
-            .three-column-layout {
+            .two-column-layout {
                 grid-template-columns: 1fr;
             }
 
-            .three-column-layout > * {
+            .two-column-layout > * {
                 min-height: auto;
             }
 
             /* 手機版移除高度限制 */
-            .today-checkin-status,
             .leaderboard,
             .highlights {
                 max-height: none;
@@ -1737,15 +1733,6 @@
             .refresh-button-compact {
                 font-size: 16px;
                 padding: 12px 20px;
-            }
-
-            .toggle-section {
-                font-size: 15px;
-                padding: 12px 20px;
-            }
-
-            #studentAvatarsContainer {
-                max-height: 400px;
             }
 
             /* 手機版滾動條稍微細一點但仍然明顯 */
