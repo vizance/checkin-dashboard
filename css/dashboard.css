@@ -155,32 +155,8 @@
             color: #CCC;
         }
 
-        .info-update-time {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            line-height: 1.4;
-        }
-
-        .info-update-time strong {
-            color: #FF6B35;
-        }
-
-        .info-note {
-            font-size: 13px;
-            color: #999;
-            font-weight: 600;
-            font-style: italic;
-        }
-
-        .info-item-update {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-        }
-
         .context-info-bar strong {
-            color: #2C3E50;
+            color: #FF6B35;
         }
 
         /* 統計卡片 - 手繪風格 */
@@ -1563,7 +1539,7 @@
             .context-info-bar {
                 flex-direction: column;
                 gap: 10px;
-                font-size: 14px;
+                font-size: 13px;
                 padding: 15px 20px;
             }
 
@@ -1573,18 +1549,6 @@
 
             .info-item {
                 text-align: center;
-            }
-
-            .info-item-update {
-                align-items: center;
-            }
-
-            .info-update-time {
-                text-align: center;
-            }
-
-            .info-note {
-                font-size: 12px;
             }
 
             .stats-banner {
