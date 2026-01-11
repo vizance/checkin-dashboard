@@ -37,13 +37,15 @@ window.onload = function() {
 };
 
 // 將必要的函數暴露給全局，供 HTML 的 onclick 使用
-import { refreshTodayStatus, lookupStudent } from './dashboard.js';
+import { refreshTodayStatus, toggleStudentList, lookupStudent } from './dashboard.js';
 window.refreshTodayStatus = refreshTodayStatus;
+window.toggleStudentList = toggleStudentList;
 window.lookupStudent = lookupStudent;
 
 // 確認函數已掛載
 console.log('全局函數掛載完成:', {
     refreshTodayStatus: typeof window.refreshTodayStatus,
+    toggleStudentList: typeof window.toggleStudentList,
     lookupStudent: typeof window.lookupStudent
 });
 

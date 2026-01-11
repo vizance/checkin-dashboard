@@ -363,7 +363,7 @@ export function renderTodayCheckinStatus() {
 }
 
 // ============================================
-// 切換學員列表顯示（改善版：加入動畫與滾動）
+// 切換學員列表顯示（修復版：透明度問題已解決）
 // ============================================
 export function toggleStudentList() {
     const container = document.getElementById('studentAvatarsContainer');
@@ -380,10 +380,10 @@ export function toggleStudentList() {
         // 展開前先確保內容已渲染
         renderTodayCheckinStatus();
 
-        // 展開 - 明確設定所有必要屬性
+        // 展開 - 明確設定所有必要屬性（修復透明度問題）
         container.style.display = 'block';
         container.style.opacity = '1';
-        container.style.transform = 'none';
+        container.style.transform = 'translateY(0)';
         icon.textContent = '▲';
         buttonText.textContent = '收起學員列表';
 
@@ -394,21 +394,15 @@ export function toggleStudentList() {
                 block: 'nearest'
             });
         }, 100);
-
-        // 加入展開動畫 class
-        container.classList.add('expanding');
-        setTimeout(() => {
-            container.classList.remove('expanding');
-        }, 300);
     } else {
-        // 收起
-        container.classList.add('collapsing');
+        // 收起 - 使用動畫效果
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(-10px)';
+
         setTimeout(() => {
             container.style.display = 'none';
-            container.style.opacity = '0';
-            container.style.transform = 'translateY(-10px)';
-            container.classList.remove('collapsing');
         }, 300);
+
         icon.textContent = '▼';
         buttonText.textContent = '查看學員列表';
     }
