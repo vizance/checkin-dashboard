@@ -390,11 +390,64 @@ export function toggleStudentList() {
     }
 
     if (container.style.display === 'none' || !container.style.display) {
+        // 展開前先確保內容已渲染
+        console.log('展開學員列表 - 先重新渲染內容');
+        renderTodayCheckinStatus();
+
         // 展開
-        console.log('展開學員列表');
+        console.log('設定 display: block');
         container.style.display = 'block';
         icon.textContent = '▲';
         buttonText.textContent = '收起學員列表';
+
+        // 詳細檢查容器狀態
+        setTimeout(() => {
+            const computedStyle = window.getComputedStyle(container);
+            const checkedContainer = document.getElementById('checkedStudents');
+            const uncheckedContainer = document.getElementById('uncheckedStudents');
+
+            console.log('=== 容器狀態檢查 ===', {
+                '主容器 display': container.style.display,
+                '主容器 computed display': computedStyle.display,
+                '主容器 visibility': computedStyle.visibility,
+                '主容器 opacity': computedStyle.opacity,
+                '主容器 height': computedStyle.height,
+                '主容器 max-height': computedStyle.maxHeight,
+                '主容器 overflow': computedStyle.overflow,
+                '主容器 innerHTML長度': container.innerHTML.length,
+                '主容器 子元素數量': container.children.length,
+                '主容器 位置': container.getBoundingClientRect(),
+                '已打卡容器 innerHTML長度': checkedContainer ? checkedContainer.innerHTML.length : 'N/A',
+                '未打卡容器 innerHTML長度': uncheckedContainer ? uncheckedContainer.innerHTML.length : 'N/A'
+            });
+
+            // 檢查內容
+            if (container.innerHTML.length === 0) {
+                console.error('⚠️ 容器沒有內容！');
+            } else {
+                console.log('✓ 容器有內容，前 300 字元:', container.innerHTML.substring(0, 300));
+            }
+
+            // 檢查是否在可視範圍內
+            const rect = container.getBoundingClientRect();
+            const isVisible = (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+            );
+            console.log('容器是否在可視範圍內:', isVisible);
+            if (!isVisible) {
+                console.log('容器不在可視範圍內，位置:', {
+                    top: rect.top,
+                    bottom: rect.bottom,
+                    left: rect.left,
+                    right: rect.right,
+                    windowHeight: window.innerHeight,
+                    windowWidth: window.innerWidth
+                });
+            }
+        }, 50);
 
         // 平滑滾動到容器（延遲一點，等動畫開始）
         setTimeout(() => {
