@@ -567,61 +567,44 @@ function generateArticleHTML(article, index) {
     }
 
     const trimmedArticle = article.trim();
-    const maxLength = 100;
-    const needsToggle = trimmedArticle.length > maxLength;
+    const uniqueId = `article-${index}`;
 
     // 將文字中的 URL 轉為可點擊的連結
     const linkedArticle = linkifyText(trimmedArticle);
-    const preview = needsToggle ? linkifyText(trimmedArticle.substring(0, maxLength) + '...') : linkedArticle;
-    const uniqueId = `article-${index}`;
 
-    if (needsToggle) {
-        // 文字超過 100 字，提供展開/收起功能
-        return `
-            <div class="highlight-article">
-                <div class="article-label">📝 今日文章</div>
-                <div class="article-text-container">
-                    <div class="article-text-preview" id="${uniqueId}-preview">${preview}</div>
-                    <div class="article-text-full" id="${uniqueId}-full" style="display: none;">${linkedArticle}</div>
-                    <button class="article-toggle-button" onclick="toggleArticle('${uniqueId}')">
-                        <span id="${uniqueId}-toggle-text">展開全文</span> <span id="${uniqueId}-toggle-icon">▼</span>
-                    </button>
-                </div>
+    // 一律使用 Toggle 模式，預設收合
+    return `
+        <div class="highlight-article">
+            <div class="article-label-with-toggle">
+                <span class="article-label">📝 今日文章</span>
+                <button class="article-toggle-button-compact" onclick="toggleArticle('${uniqueId}')">
+                    <span id="${uniqueId}-toggle-text">展開</span> <span id="${uniqueId}-toggle-icon">▼</span>
+                </button>
             </div>
-        `;
-    } else {
-        // 文字少於 100 字，直接顯示
-        return `
-            <div class="highlight-article">
-                <div class="article-label">📝 今日文章</div>
-                <div class="article-text-container">
-                    <div class="article-text-full">${linkedArticle}</div>
-                </div>
+            <div class="article-text-container" id="${uniqueId}-content" style="display: none;">
+                <div class="article-text-full">${linkedArticle}</div>
             </div>
-        `;
-    }
+        </div>
+    `;
 }
 
 // ============================================
 // 切換文章展開/收起
 // ============================================
 export function toggleArticle(uniqueId) {
-    const preview = document.getElementById(`${uniqueId}-preview`);
-    const full = document.getElementById(`${uniqueId}-full`);
+    const content = document.getElementById(`${uniqueId}-content`);
     const toggleText = document.getElementById(`${uniqueId}-toggle-text`);
     const toggleIcon = document.getElementById(`${uniqueId}-toggle-icon`);
 
-    if (full.style.display === 'none') {
+    if (content.style.display === 'none') {
         // 展開
-        preview.style.display = 'none';
-        full.style.display = 'block';
+        content.style.display = 'block';
         toggleText.textContent = '收起';
         toggleIcon.textContent = '▲';
     } else {
         // 收起
-        preview.style.display = 'block';
-        full.style.display = 'none';
-        toggleText.textContent = '展開全文';
+        content.style.display = 'none';
+        toggleText.textContent = '展開';
         toggleIcon.textContent = '▼';
     }
 }

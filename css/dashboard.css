@@ -570,14 +570,42 @@
             box-shadow: 2px 2px 0px rgba(91, 127, 219, 0.2);
         }
 
+        /* 標籤與按鈕並排 */
+        .article-label-with-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
         .article-label {
             font-size: 16px;
             font-weight: 900;
             color: #5B7FDB;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        }
+
+        /* 緊湊型 Toggle 按鈕（放在標籤旁）*/
+        .article-toggle-button-compact {
+            padding: 4px 12px;
+            background: white;
+            color: #5B7FDB;
+            border: 2px solid #5B7FDB;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        .article-toggle-button-compact:hover {
+            background: #5B7FDB;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .article-toggle-button-compact:active {
+            transform: translateY(0);
         }
 
         /* 文章連結按鈕 */
@@ -612,6 +640,23 @@
             padding: 12px;
             border-radius: 6px;
             border: 2px solid #D0DBFF;
+            margin-top: 10px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 1000px;
+                padding-top: 12px;
+                padding-bottom: 12px;
+            }
         }
 
         .article-text-preview,
