@@ -550,56 +550,55 @@ function getMilestones(student) {
 }
 
 // ============================================
-// 生成文章區塊的 HTML（智能顯示：連結或折疊文字）
+// 生成文章區塊的 HTML（自動將 URL 轉為連結，超過 100 字可展開/收起）
 // ============================================
+
+/**
+ * 輔助函數：將文字中的 URL 轉為可點擊的超連結
+ */
+function linkifyText(text) {
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer" class="article-inline-link">$1</a>');
+}
+
 function generateArticleHTML(article, index) {
     if (!article || article.trim() === '') {
         return '';  // 沒有文章，不顯示
     }
 
     const trimmedArticle = article.trim();
-    const isURL = /^https?:\/\//i.test(trimmedArticle);
+    const maxLength = 100;
+    const needsToggle = trimmedArticle.length > maxLength;
 
-    if (isURL) {
-        // 如果是連結，顯示「查看文章」按鈕
+    // 將文字中的 URL 轉為可點擊的連結
+    const linkedArticle = linkifyText(trimmedArticle);
+    const preview = needsToggle ? linkifyText(trimmedArticle.substring(0, maxLength) + '...') : linkedArticle;
+    const uniqueId = `article-${index}`;
+
+    if (needsToggle) {
+        // 文字超過 100 字，提供展開/收起功能
         return `
             <div class="highlight-article">
                 <div class="article-label">📝 今日文章</div>
-                <a href="${trimmedArticle}" target="_blank" rel="noopener noreferrer" class="article-link-button">
-                    查看文章 →
-                </a>
+                <div class="article-text-container">
+                    <div class="article-text-preview" id="${uniqueId}-preview">${preview}</div>
+                    <div class="article-text-full" id="${uniqueId}-full" style="display: none;">${linkedArticle}</div>
+                    <button class="article-toggle-button" onclick="toggleArticle('${uniqueId}')">
+                        <span id="${uniqueId}-toggle-text">展開全文</span> <span id="${uniqueId}-toggle-icon">▼</span>
+                    </button>
+                </div>
             </div>
         `;
     } else {
-        // 如果是文字，使用折疊功能
-        const maxLength = 100;
-        const needsToggle = trimmedArticle.length > maxLength;
-        const preview = needsToggle ? trimmedArticle.substring(0, maxLength) + '...' : trimmedArticle;
-        const uniqueId = `article-${index}`;
-
-        if (needsToggle) {
-            return `
-                <div class="highlight-article">
-                    <div class="article-label">📝 今日文章</div>
-                    <div class="article-text-container">
-                        <div class="article-text-preview" id="${uniqueId}-preview">${preview}</div>
-                        <div class="article-text-full" id="${uniqueId}-full" style="display: none;">${trimmedArticle}</div>
-                        <button class="article-toggle-button" onclick="toggleArticle('${uniqueId}')">
-                            <span id="${uniqueId}-toggle-text">展開全文</span> <span id="${uniqueId}-toggle-icon">▼</span>
-                        </button>
-                    </div>
+        // 文字少於 100 字，直接顯示
+        return `
+            <div class="highlight-article">
+                <div class="article-label">📝 今日文章</div>
+                <div class="article-text-container">
+                    <div class="article-text-full">${linkedArticle}</div>
                 </div>
-            `;
-        } else {
-            return `
-                <div class="highlight-article">
-                    <div class="article-label">📝 今日文章</div>
-                    <div class="article-text-container">
-                        <div class="article-text-full">${trimmedArticle}</div>
-                    </div>
-                </div>
-            `;
-        }
+            </div>
+        `;
     }
 }
 

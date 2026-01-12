@@ -624,6 +624,23 @@
             word-wrap: break-word;
         }
 
+        /* 文章內的內嵌連結 */
+        .article-inline-link {
+            color: #5B7FDB;
+            text-decoration: underline;
+            font-weight: 900;
+            word-break: break-all;
+            transition: all 0.2s ease;
+        }
+
+        .article-inline-link:hover {
+            color: #4A6BC9;
+            text-decoration: underline;
+            background: rgba(91, 127, 219, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
         /* 展開/收起按鈕 */
         .article-toggle-button {
             margin-top: 10px;
