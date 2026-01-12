@@ -6,7 +6,7 @@
 // Google Sheets 配置
 export const SHEET_ID = '1C1t_hUTFDaQlxS4np8NiieyOiwPdG0ZGK_zn2wlHDSA';
 export const STATS_GID = '1618258511';
-export const HIGHLIGHTS_GID = '532678141';
+export const HIGHLIGHTS_GID = '365956972';  // 表單回應工作表
 
 // CSV 匯出 URL
 export const STATS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${STATS_GID}`;
@@ -17,8 +17,8 @@ export const COURSE_START_DATE = new Date('2025-12-07');
 
 // 正式模式：使用真實日期
 // 注意：如果你有歷史測試資料需要查看，可以設定為特定日期來「時間旅行」
-// 例如：export const TEST_TODAY_DATE = new Date('2026-01-09');
-export const TEST_TODAY_DATE = null; // null = 使用真實的今天日期
+// 例如： export const TEST_TODAY_DATE = new Date('2026-01-09');
+export const TEST_TODAY_DATE = new Date('2025-12-21'); // null = 使用真實的今天日期
 
 // 緩存配置
 export const CACHE_KEY_STATS = 'checkin_stats_cache';
