@@ -1,23 +1,20 @@
 /**
- * 5週復盤陪跑班 - 打卡系統 Apps Script (完整版)
+ * 5週復盤陪跑班 - 打卡系統 Apps Script (正式版)
  *
  * 功能：
  * 1. 計算連續打卡天數
  * 2. 批量更新學員統計
- * 3. 生成測試資料
- * 4. 自動觸發器管理
- * 5. 自訂選單（開啟試算表時自動載入）
+ * 3. 自動觸發器管理
+ * 4. 自訂選單（開啟試算表時自動載入）
  *
  * 使用方式：
  * 1. 將此檔案內容複製到 Google Apps Script 編輯器
  * 2. 重新開啟試算表，會看到「打卡系統」選單
  * 3. 從選單中執行所有操作
  *
- * 課程開始前：
- * 1. 選單 > 測試資料 > 生成 35 天完美測試資料 (50人)
- * 2. 選單 > 更新連續天數
- * 3. 測試完成後：選單 > 測試資料 > 清空所有測試資料
- * 4. 輸入真實學員名單：選單 > 自動化設定 > 設定自動觸發器 (3次/天)
+ * 課程開始時：
+ * 1. 選單 > 🔧 工具 > ⚡ 設定所有公式
+ * 2. 選單 > ⚙️ 自動化設定 > ✅ 設定自動觸發器 (3次/天)
  */
 
 // ============================================
@@ -26,22 +23,12 @@
 
 /**
  * 當試算表開啟時自動執行，創建自訂選單
- * 這樣你就不用每次都進 Apps Script 編輯器了！
  */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
 
   ui.createMenu('📋 打卡系統')
     .addItem('🔄 更新連續天數', 'updateAllConsecutiveDays')
-    .addSeparator()
-    .addSubMenu(ui.createMenu('🧪 測試資料')
-      .addItem('生成 5 人測試資料', 'generateTestData5')
-      .addItem('生成 50 人測試資料', 'generateTestData50')
-      .addItem('生成 100 人測試資料', 'generateTestData100')
-      .addSeparator()
-      .addItem('生成 35 天完美測試資料 (50人)', 'generateTestData35DaysPerfect')
-      .addSeparator()
-      .addItem('⚠️ 清空所有測試資料', 'clearTestData'))
     .addSeparator()
     .addSubMenu(ui.createMenu('⚙️ 自動化設定')
       .addItem('✅ 設定自動觸發器 (3次/天)', 'createMultipleDailyTriggers')
@@ -52,139 +39,8 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu('🔧 工具')
       .addItem('檢查工作表設定', 'checkRequiredSheets')
-      .addItem('⚡ 設定所有公式', 'setupStatsFormulas')
-      .addSeparator()
-      .addItem('一鍵完整初始化', 'quickSetup'))
+      .addItem('⚡ 設定所有公式', 'setupStatsFormulas'))
     .addToUi();
-}
-
-/**
- * 一鍵完整初始化（課程開始前使用）
- * 包含：生成測試資料 + 更新統計 + 設定自動觸發器
- */
-function quickSetup() {
-  const ui = SpreadsheetApp.getUi();
-
-  const response = ui.alert(
-    '一鍵初始化',
-    '這將會執行以下操作：\n\n' +
-    '1. 生成 50 位學員的 35 天完美測試資料\n' +
-    '2. 更新所有學員的連續打卡天數\n' +
-    '3. 設定每日 3 次自動觸發器 (8:00, 14:00, 23:00)\n\n' +
-    '⚠️ 如果已有測試資料，請先清空\n\n' +
-    '是否繼續？',
-    ui.ButtonSet.YES_NO
-  );
-
-  if (response !== ui.Button.YES) {
-    ui.alert('已取消操作。');
-    return;
-  }
-
-  // 1. 檢查工作表
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const requiredSheets = ['表單回應', '學員名單', '打卡統計', '每日亮點牆'];
-  let allExist = true;
-
-  requiredSheets.forEach(name => {
-    if (!ss.getSheetByName(name)) {
-      allExist = false;
-    }
-  });
-
-  if (!allExist) {
-    ui.alert('❌ 初始化失敗',
-      '找不到必要的工作表！\n請先執行「檢查工作表設定」診斷問題。',
-      ui.ButtonSet.OK);
-    return;
-  }
-
-  // 2. 生成測試資料
-  ui.alert('步驟 1/4：生成測試資料...');
-  generateTestData35DaysPerfect(50);
-
-  // 3. 設定公式
-  Utilities.sleep(2000); // 等待 2 秒
-  ui.alert('步驟 2/4：設定公式...');
-  setupStatsFormulasQuiet();
-
-  // 4. 更新連續天數
-  Utilities.sleep(2000);
-  ui.alert('步驟 3/4：更新連續天數...');
-  updateAllConsecutiveDays();
-
-  // 5. 設定自動觸發器
-  Utilities.sleep(2000);
-  ui.alert('步驟 4/4：設定自動觸發器...');
-  createMultipleDailyTriggersQuiet();
-
-  ui.alert(
-    '✅ 初始化完成！',
-    '系統已完成以下設定：\n\n' +
-    '✅ 生成 50 位學員的 35 天測試資料\n' +
-    '✅ 設定所有公式（累計天數、里程碑等）\n' +
-    '✅ 更新所有學員的連續天數\n' +
-    '✅ 設定每日 3 次自動觸發器\n\n' +
-    '現在可以測試儀表板了！',
-    ui.ButtonSet.OK
-  );
-}
-
-/**
- * 靜默版本的公式設定（用於自動化流程）
- */
-function setupStatsFormulasQuiet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const statsSheet = ss.getSheetByName('打卡統計');
-
-  if (!statsSheet) return;
-
-  const lastRow = statsSheet.getLastRow();
-  if (lastRow <= 1) return;
-
-  const numRows = lastRow - 1;
-
-  // B欄：累計打卡天數
-  const totalDaysRange = statsSheet.getRange(2, 2, numRows, 1);
-  totalDaysRange.setFormula('=COUNTIF(表單回應!$C:$C, A2)');
-
-  // D欄：最近打卡日期
-  const lastDateRange = statsSheet.getRange(2, 4, numRows, 1);
-  lastDateRange.setFormula('=IFERROR(MAXIFS(表單回應!$D:$D, 表單回應!$C:$C, A2), "")');
-
-  // E-H欄：里程碑
-  statsSheet.getRange(2, 5, numRows, 1).setFormula('=IF(C2>=7, "🏆", "-")');
-  statsSheet.getRange(2, 6, numRows, 1).setFormula('=IF(C2>=14, "🏆", "-")');
-  statsSheet.getRange(2, 7, numRows, 1).setFormula('=IF(C2>=21, "🏆", "-")');
-  statsSheet.getRange(2, 8, numRows, 1).setFormula('=IF(C2>=28, "🏆", "-")');
-
-  // I欄：35天里程碑
-  if (statsSheet.getLastColumn() >= 9) {
-    statsSheet.getRange(2, 9, numRows, 1).setFormula('=IF(C2>=35, "🏆", "-")');
-  }
-}
-
-/**
- * 靜默版本的觸發器設定（用於自動化流程）
- */
-function createMultipleDailyTriggersQuiet() {
-  // 先刪除所有舊的觸發器
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
-    if (trigger.getHandlerFunction() === 'updateAllConsecutiveDays') {
-      ScriptApp.deleteTrigger(trigger);
-    }
-  });
-
-  // 建立 3 個觸發器
-  ScriptApp.newTrigger('updateAllConsecutiveDays')
-    .timeBased().atHour(8).everyDays(1).create();
-
-  ScriptApp.newTrigger('updateAllConsecutiveDays')
-    .timeBased().atHour(14).everyDays(1).create();
-
-  ScriptApp.newTrigger('updateAllConsecutiveDays')
-    .timeBased().atHour(23).everyDays(1).create();
 }
 
 // ============================================
@@ -249,13 +105,13 @@ function setupStatsFormulas() {
   // 設定公式的範圍（從第 2 行開始到最後一行）
   const numRows = lastRow - 1;
 
-  // B欄：累計打卡天數（計算該學員在表單回應中出現的次數）
-  const totalDaysFormula = '=COUNTIF(表單回應!$C:$C, A2)';
+  // B欄：累計打卡天數（只計算「已完成」的打卡記錄）
+  const totalDaysFormula = '=COUNTIFS(表單回應!$C:$C, A2, 表單回應!$E:$E, "✅ 是，已完成")';
   const totalDaysRange = statsSheet.getRange(2, 2, numRows, 1);
   totalDaysRange.setFormula(totalDaysFormula);
 
-  // D欄：最近打卡日期（取該學員最新的打卡日期）
-  const lastDateFormula = '=IFERROR(MAXIFS(表單回應!$D:$D, 表單回應!$C:$C, A2), "")';
+  // D欄：最近打卡日期（只計算「已完成」的打卡記錄）
+  const lastDateFormula = '=IFERROR(MAXIFS(表單回應!$D:$D, 表單回應!$C:$C, A2, 表單回應!$E:$E, "✅ 是，已完成"), "")';
   const lastDateRange = statsSheet.getRange(2, 4, numRows, 1);
   lastDateRange.setFormula(lastDateFormula);
 
@@ -464,315 +320,6 @@ function updateAllConsecutiveDays() {
   SpreadsheetApp.getUi().alert(
     '更新完成！\n\n已更新 ' + updateData.length + ' 位學員的連續打卡天數。'
   );
-}
-
-// ============================================
-// 測試資料生成
-// ============================================
-
-/**
- * 生成測試資料（優化版，支援自訂學員數量）
- * @param {number} numStudents - 學員數量（預設 100）
- */
-function generateTestData(numStudents = 100) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const responseSheet = ss.getSheetByName('表單回應');
-  const studentListSheet = ss.getSheetByName('學員名單');
-
-  // 檢查必要的工作表是否存在
-  if (!responseSheet || !studentListSheet) {
-    SpreadsheetApp.getUi().alert(
-      '❌ 錯誤',
-      '找不到必要的工作表！\n請執行 checkRequiredSheets() 檢查工作表名稱。',
-      SpreadsheetApp.getUi().ButtonSet.OK
-    );
-    return;
-  }
-
-  // 先清空學員名單
-  const lastRow = studentListSheet.getLastRow();
-  if (lastRow > 1) {
-    const range = studentListSheet.getRange(2, 1, lastRow - 1, studentListSheet.getLastColumn());
-    range.clearContent();
-  }
-
-  // 產生學員名單
-  const studentNames = [];
-  for (let i = 1; i <= numStudents; i++) {
-    const name = `學員${String(i).padStart(3, '0')}`; // 學員001, 學員002...
-    studentNames.push(name);
-    studentListSheet.appendRow([name, '2025-01-13', '在班', '']);
-  }
-
-  // 定義不同的打卡模式（隨機分配給學員）
-  const patterns = [
-    { days: 35, skipRate: 0 },      // 完美打卡
-    { days: 35, skipRate: 0.05 },   // 偶爾漏打（95% 出席率）
-    { days: 30, skipRate: 0.1 },    // 經常漏打（90% 出席率）
-    { days: 25, skipRate: 0.15 },   // 較多漏打（85% 出席率）
-    { days: 20, skipRate: 0.2 }     // 常漏打（80% 出席率）
-  ];
-
-  const methods = [
-    '📝 ORID 情緒萃取',
-    '🎯 PAR 工作萃取',
-    '📸 相片簿生活萃取',
-    '🎙️ AI Podcast 訪談',
-    '⏳ 只記錄，尚未萃取'
-  ];
-
-  const highlights = [
-    '今天用 ORID 釐清了對專案的焦慮感，發現核心是溝通問題',
-    '透過 PAR 整理了今天的會議重點，發現自己進步了',
-    '用相片簿記錄了美好的一天，心情變好了',
-    '今天和 AI 對談，挖掘出深層的想法',
-    '簡單記錄了今天的三件事，感覺很踏實',
-    '發現自己在情緒管理上有明顯進步',
-    '今天的工作效率提升了，找到了新的工作方法',
-    '透過復盤看到自己的成長軌跡，很有成就感'
-  ];
-
-  let totalRecords = 0;
-  const batchData = [];
-
-  // 為每位學員產生資料
-  studentNames.forEach((name) => {
-    const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-
-    for (let i = pattern.days - 1; i >= 0; i--) {
-      // 根據 skipRate 決定是否跳過
-      if (Math.random() < pattern.skipRate) {
-        continue;
-      }
-
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-
-      const timestamp = new Date(date);
-      timestamp.setHours(20 + Math.floor(Math.random() * 3));
-      timestamp.setMinutes(Math.floor(Math.random() * 60));
-
-      const method = methods[Math.floor(Math.random() * methods.length)];
-      const highlight = highlights[Math.floor(Math.random() * highlights.length)];
-      const extraMessage = Math.random() > 0.5 ? '謝謝同學們的鼓勵！' : '';
-
-      batchData.push([
-        timestamp,
-        name + '@gmail.com',
-        name,
-        date,
-        '✅ 是，已完成',
-        highlight,
-        method,
-        extraMessage
-      ]);
-
-      totalRecords++;
-    }
-  });
-
-  // 批次寫入資料
-  if (batchData.length > 0) {
-    const range = responseSheet.getRange(
-      responseSheet.getLastRow() + 1,
-      1,
-      batchData.length,
-      8
-    );
-    range.setValues(batchData);
-  }
-
-  // 自動設定公式
-  setupStatsFormulasQuiet();
-
-  SpreadsheetApp.getUi().alert(
-    '✅ 測試資料已產生！\n\n' +
-    '學員數量：' + numStudents + ' 位\n' +
-    '打卡記錄：' + totalRecords + ' 筆\n' +
-    '平均出席率：約 85-95%\n' +
-    '✅ 所有公式已自動設定\n\n' +
-    '接下來執行：選單 > 🔄 更新連續天數'
-  );
-}
-
-/**
- * 快速生成測試資料的便捷函數
- */
-function generateTestData5() {
-  generateTestData(5);
-}
-
-function generateTestData50() {
-  generateTestData(50);
-}
-
-function generateTestData100() {
-  generateTestData(100);
-}
-
-/**
- * 生成 35 天完美連續打卡的測試資料
- * 所有學員都會有完整的 35 天打卡記錄，不跳過任何一天
- * @param {number} numStudents - 學員數量（預設 50）
- */
-function generateTestData35DaysPerfect(numStudents = 50) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const responseSheet = ss.getSheetByName('表單回應');
-  const studentListSheet = ss.getSheetByName('學員名單');
-
-  if (!responseSheet || !studentListSheet) {
-    SpreadsheetApp.getUi().alert(
-      '❌ 錯誤',
-      '找不到必要的工作表！\n請執行 checkRequiredSheets() 檢查工作表名稱。',
-      SpreadsheetApp.getUi().ButtonSet.OK
-    );
-    return;
-  }
-
-  // 先清空學員名單
-  const lastRow = studentListSheet.getLastRow();
-  if (lastRow > 1) {
-    const range = studentListSheet.getRange(2, 1, lastRow - 1, studentListSheet.getLastColumn());
-    range.clearContent();
-  }
-
-  // 產生學員名單
-  const studentNames = [];
-  for (let i = 1; i <= numStudents; i++) {
-    const name = `學員${String(i).padStart(3, '0')}`;
-    studentNames.push(name);
-    studentListSheet.appendRow([name, '2025-01-13', '在班', '']);
-  }
-
-  const methods = [
-    '📝 ORID 情緒萃取',
-    '🎯 PAR 工作萃取',
-    '📸 相片簿生活萃取',
-    '🎙️ AI Podcast 訪談',
-    '⏳ 只記錄，尚未萃取'
-  ];
-
-  const highlights = [
-    '今天用 ORID 釐清了對專案的焦慮感，發現核心是溝通問題',
-    '透過 PAR 整理了今天的會議重點，發現自己進步了',
-    '用相片簿記錄了美好的一天，心情變好了',
-    '今天和 AI 對談，挖掘出深層的想法',
-    '簡單記錄了今天的三件事，感覺很踏實',
-    '發現自己在情緒管理上有明顯進步',
-    '今天的工作效率提升了，找到了新的工作方法',
-    '透過復盤看到自己的成長軌跡，很有成就感'
-  ];
-
-  let totalRecords = 0;
-  const batchData = [];
-
-  // 為每位學員產生 35 天完美打卡資料
-  studentNames.forEach((name) => {
-    for (let i = 34; i >= 0; i--) { // 從第 34 天前開始（總共 35 天）
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-
-      const timestamp = new Date(date);
-      timestamp.setHours(20 + Math.floor(Math.random() * 3));
-      timestamp.setMinutes(Math.floor(Math.random() * 60));
-
-      const method = methods[Math.floor(Math.random() * methods.length)];
-      const highlight = highlights[Math.floor(Math.random() * highlights.length)];
-      const extraMessage = Math.random() > 0.5 ? '謝謝同學們的鼓勵！' : '';
-
-      batchData.push([
-        timestamp,
-        name + '@gmail.com',
-        name,
-        date,
-        '✅ 是，已完成',
-        highlight,
-        method,
-        extraMessage
-      ]);
-
-      totalRecords++;
-    }
-  });
-
-  // 批次寫入資料
-  if (batchData.length > 0) {
-    const range = responseSheet.getRange(
-      responseSheet.getLastRow() + 1,
-      1,
-      batchData.length,
-      8
-    );
-    range.setValues(batchData);
-  }
-
-  // 自動設定公式
-  setupStatsFormulasQuiet();
-
-  SpreadsheetApp.getUi().alert(
-    '✅ 完美 35 天連續打卡測試資料已產生！\n\n' +
-    '學員數量：' + numStudents + ' 位\n' +
-    '打卡記錄：' + totalRecords + ' 筆 (' + numStudents + ' × 35 天)\n' +
-    '出席率：100%（所有學員都有完整 35 天打卡記錄）\n' +
-    '✅ 所有公式已自動設定\n\n' +
-    '接下來執行：選單 > 🔄 更新連續天數'
-  );
-}
-
-/**
- * 清空測試資料
- * 保留標題列，清除所有測試資料內容
- */
-function clearTestData() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const responseSheet = ss.getSheetByName('表單回應');
-  const studentListSheet = ss.getSheetByName('學員名單');
-  const statsSheet = ss.getSheetByName('打卡統計');
-
-  const ui = SpreadsheetApp.getUi();
-  const response = ui.alert(
-    '確認刪除',
-    '確定要刪除所有測試資料嗎？\n\n此操作將清空：\n' +
-    '1. 表單回應（保留標題列）\n' +
-    '2. 學員名單（保留標題列）\n' +
-    '3. 打卡統計（保留標題列，但清空數據）\n\n' +
-    '此操作無法復原！',
-    ui.ButtonSet.YES_NO
-  );
-
-  if (response == ui.Button.YES) {
-    // 清空表單回應
-    let lastRow = responseSheet.getLastRow();
-    if (lastRow > 1) {
-      const range = responseSheet.getRange(2, 1, lastRow - 1, responseSheet.getLastColumn());
-      range.clearContent();
-    }
-
-    // 清空學員名單
-    lastRow = studentListSheet.getLastRow();
-    if (lastRow > 1) {
-      const range = studentListSheet.getRange(2, 1, lastRow - 1, studentListSheet.getLastColumn());
-      range.clearContent();
-    }
-
-    // 清空打卡統計的資料欄位（B, C, D 欄）
-    lastRow = statsSheet.getLastRow();
-    if (lastRow > 1) {
-      const range = statsSheet.getRange(2, 2, lastRow - 1, statsSheet.getLastColumn() - 1);
-      range.clearContent();
-    }
-
-    ui.alert(
-      '✅ 測試資料已清空！',
-      '標題列已保留。\n\n接下來請執行：\n' +
-      '1. 在「學員名單」新增真實學員\n' +
-      '2. 選單 > 🔧 工具 > ⚡ 設定所有公式\n' +
-      '3. 選單 > ⚙️ 自動化設定 > 設定自動觸發器',
-      ui.ButtonSet.OK
-    );
-  } else {
-    ui.alert('已取消操作。');
-  }
 }
 
 // ============================================

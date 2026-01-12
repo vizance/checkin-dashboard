@@ -149,9 +149,15 @@ function getCheckinRateForDate(date) {
     const totalStudents = statsData.length;
     let checkedCount = 0;
 
-    // 統計該日期有多少人打卡
+    // 統計該日期有多少人打卡（只計算「已完成」的記錄）
     highlightsData.forEach(highlight => {
-        if (!highlight[3]) return;  // highlight[3] = D: 打卡日期
+        // highlight[3] = D: 打卡日期
+        // highlight[4] = E: 是否完成
+        if (!highlight[3] || !highlight[4]) return;
+
+        // 只統計「✅ 是，已完成」的記錄
+        const isCompleted = highlight[4];
+        if (isCompleted !== "✅ 是，已完成") return;
 
         // 處理 Google Sheets 的日期時間格式
         const dateOnly = highlight[3].trim().split(' ')[0];
