@@ -18,6 +18,15 @@
  */
 
 // ============================================
+// 測試模式設定
+// ============================================
+
+// 測試模式：設為 null 使用真實日期，或設為特定日期進行測試
+// 正式上線時請設為 null
+// 例如：const TEST_TODAY_DATE = new Date('2025-12-21');
+const TEST_TODAY_DATE = new Date('2025-12-21'); // 測試模式：模擬今天是 12/21
+
+// ============================================
 // 自訂選單（打開試算表時自動載入）
 // ============================================
 
@@ -193,7 +202,7 @@ function calculateConsecutiveDays(studentName) {
 
   // 計算連續天數
   let consecutiveDays = 1;
-  const today = new Date();
+  const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
   today.setHours(0, 0, 0, 0);
 
   const latestDate = new Date(records[0]);
@@ -265,7 +274,7 @@ function updateAllConsecutiveDays() {
   }
 
   // 計算每位學員的連續天數
-  const today = new Date();
+  const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
   today.setHours(0, 0, 0, 0);
 
   const updateData = [];
@@ -317,8 +326,9 @@ function updateAllConsecutiveDays() {
     range.setValues(updateData);
   }
 
+  const testModeMsg = TEST_TODAY_DATE ? '\n\n⚠️ 測試模式：使用模擬日期 ' + TEST_TODAY_DATE.toLocaleDateString() : '';
   SpreadsheetApp.getUi().alert(
-    '更新完成！\n\n已更新 ' + updateData.length + ' 位學員的連續打卡天數。'
+    '更新完成！\n\n已更新 ' + updateData.length + ' 位學員的連續打卡天數。' + testModeMsg
   );
 }
 
