@@ -538,6 +538,84 @@ function getMilestones(student) {
 }
 
 // ============================================
+// 生成文章區塊的 HTML（智能顯示：連結或折疊文字）
+// ============================================
+function generateArticleHTML(article, index) {
+    if (!article || article.trim() === '') {
+        return '';  // 沒有文章，不顯示
+    }
+
+    const trimmedArticle = article.trim();
+    const isURL = /^https?:\/\//i.test(trimmedArticle);
+
+    if (isURL) {
+        // 如果是連結，顯示「查看文章」按鈕
+        return `
+            <div class="highlight-article">
+                <div class="article-label">📝 今日文章</div>
+                <a href="${trimmedArticle}" target="_blank" rel="noopener noreferrer" class="article-link-button">
+                    查看文章 →
+                </a>
+            </div>
+        `;
+    } else {
+        // 如果是文字，使用折疊功能
+        const maxLength = 100;
+        const needsToggle = trimmedArticle.length > maxLength;
+        const preview = needsToggle ? trimmedArticle.substring(0, maxLength) + '...' : trimmedArticle;
+        const uniqueId = `article-${index}`;
+
+        if (needsToggle) {
+            return `
+                <div class="highlight-article">
+                    <div class="article-label">📝 今日文章</div>
+                    <div class="article-text-container">
+                        <div class="article-text-preview" id="${uniqueId}-preview">${preview}</div>
+                        <div class="article-text-full" id="${uniqueId}-full" style="display: none;">${trimmedArticle}</div>
+                        <button class="article-toggle-button" onclick="toggleArticle('${uniqueId}')">
+                            <span id="${uniqueId}-toggle-text">展開全文</span> <span id="${uniqueId}-toggle-icon">▼</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="highlight-article">
+                    <div class="article-label">📝 今日文章</div>
+                    <div class="article-text-container">
+                        <div class="article-text-full">${trimmedArticle}</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+// ============================================
+// 切換文章展開/收起
+// ============================================
+export function toggleArticle(uniqueId) {
+    const preview = document.getElementById(`${uniqueId}-preview`);
+    const full = document.getElementById(`${uniqueId}-full`);
+    const toggleText = document.getElementById(`${uniqueId}-toggle-text`);
+    const toggleIcon = document.getElementById(`${uniqueId}-toggle-icon`);
+
+    if (full.style.display === 'none') {
+        // 展開
+        preview.style.display = 'none';
+        full.style.display = 'block';
+        toggleText.textContent = '收起';
+        toggleIcon.textContent = '▲';
+    } else {
+        // 收起
+        preview.style.display = 'block';
+        full.style.display = 'none';
+        toggleText.textContent = '展開全文';
+        toggleIcon.textContent = '▼';
+    }
+}
+
+// ============================================
 // 渲染每日亮點牆（只顯示今天）
 // ============================================
 export function renderHighlights() {
@@ -597,12 +675,16 @@ export function renderHighlights() {
             </div>
         `;
     } else {
-        todayHighlights.forEach(highlight => {
+        todayHighlights.forEach((highlight, index) => {
             const date = formatDate(highlight[0]);
             const name = highlight[1];
             const content = highlight[2];
             const method = highlight[3];
-            const extra = highlight[4];
+            const article = highlight[4];  // 今日撰寫的文章（新增）
+            const extra = highlight[5];    // 想對同期戰友說的話（索引改變）
+
+            // 生成文章區塊的 HTML
+            const articleHTML = generateArticleHTML(article, index);
 
             html += `
                 <div class="highlight-card">
@@ -612,6 +694,7 @@ export function renderHighlights() {
                     </div>
                     <div class="highlight-content">💡 ${content}</div>
                     ${method ? `<span class="highlight-method">${method}</span>` : ''}
+                    ${articleHTML}
                     ${extra ? `<div class="highlight-extra">💬 ${extra}</div>` : ''}
                 </div>
             `;
@@ -695,11 +778,15 @@ export function lookupStudent() {
 
     let highlightsHTML = '';
     if (studentHighlights.length > 0) {
-        studentHighlights.forEach(highlight => {
+        studentHighlights.forEach((highlight, index) => {
             const date = formatDate(highlight[0]);
             const content = highlight[2];
             const method = highlight[3];
-            const extra = highlight[4];
+            const article = highlight[4];  // 今日撰寫的文章（新增）
+            const extra = highlight[5];    // 想對同期戰友說的話（索引改變）
+
+            // 生成文章區塊的 HTML
+            const articleHTML = generateArticleHTML(article, `lookup-${index}`);
 
             highlightsHTML += `
                 <div class="highlight-card" style="margin-bottom: 15px;">
@@ -708,6 +795,7 @@ export function lookupStudent() {
                     </div>
                     <div class="highlight-content" style="font-size: 19px;">💡 ${content}</div>
                     ${method ? `<span class="highlight-method" style="font-size: 15px;">${method}</span>` : ''}
+                    ${articleHTML}
                     ${extra ? `<div class="highlight-extra" style="font-size: 16px;">💬 ${extra}</div>` : ''}
                 </div>
             `;
