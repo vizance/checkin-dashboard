@@ -74,10 +74,16 @@ function getTodayCheckedStudents() {
     const checkedStudents = new Set();
 
     highlightsData.forEach((highlight, index) => {
-        if (!highlight[0] || !highlight[1]) return;
+        // highlight[0] = A: 時間戳記
+        // highlight[1] = B: 電子郵件
+        // highlight[2] = C: 姓名
+        // highlight[3] = D: 打卡日期
+        // highlight[4] = E: 是否完成
 
-        const originalDateStr = highlight[0];
-        const studentName = highlight[1];
+        if (!highlight[3] || !highlight[2]) return;
+
+        const originalDateStr = highlight[3];  // D: 打卡日期
+        const studentName = highlight[2];      // C: 姓名
 
         // 處理 Google Sheets 的日期時間格式 (例如: "2026/1/9 下午 4:52:25")
         // 先提取空格前的日期部分
@@ -145,10 +151,10 @@ function getCheckinRateForDate(date) {
 
     // 統計該日期有多少人打卡
     highlightsData.forEach(highlight => {
-        if (!highlight[0]) return;
+        if (!highlight[3]) return;  // highlight[3] = D: 打卡日期
 
         // 處理 Google Sheets 的日期時間格式
-        const dateOnly = highlight[0].trim().split(' ')[0];
+        const dateOnly = highlight[3].trim().split(' ')[0];
         let highlightDate = new Date(dateOnly);
 
         if (isNaN(highlightDate.getTime())) {
@@ -628,11 +634,11 @@ export function renderHighlights() {
 
     // 過濾出今天的亮點
     const todayHighlights = highlightsData.filter(highlight => {
-        if (!highlight[0]) return false;
+        if (!highlight[3]) return false;  // highlight[3] = D: 打卡日期
 
         // 處理 Google Sheets 的日期時間格式 (例如: "2026/1/9 下午 4:52:25")
         // 先提取空格前的日期部分
-        const dateOnly = highlight[0].trim().split(' ')[0];
+        const dateOnly = highlight[3].trim().split(' ')[0];
 
         // 解析日期
         let highlightDate = new Date(dateOnly);
@@ -676,12 +682,18 @@ export function renderHighlights() {
         `;
     } else {
         todayHighlights.forEach((highlight, index) => {
-            const date = formatDate(highlight[0]);
-            const name = highlight[1];
-            const content = highlight[2];
-            const method = highlight[3];
-            const article = highlight[4];  // 今日撰寫的文章（新增）
-            const extra = highlight[5];    // 想對同期戰友說的話（索引改變）
+            const timestamp = highlight[0];  // A: 時間戳記
+            const email = highlight[1];      // B: 電子郵件（不使用）
+            const name = highlight[2];       // C: 姓名
+            const dateStr = highlight[3];    // D: 打卡日期
+            const isCompleted = highlight[4]; // E: 是否完成（已由過濾處理）
+            const content = highlight[5];    // F: 今日一句話亮點
+            const method = highlight[6];     // G: 萃取法
+            const article = highlight[7];    // H: 今日撰寫的文章
+            const extra = highlight[8];      // I: 想對戰友說的話
+            // highlight[9] = J: 遭遇問題（目前未使用）
+
+            const date = formatDate(dateStr);
 
             // 生成文章區塊的 HTML
             const articleHTML = generateArticleHTML(article, index);
@@ -772,18 +784,25 @@ export function lookupStudent() {
     const milestones = getMilestones(student);
 
     // 從 highlightsData 過濾該學員的所有打卡記錄
-    const studentHighlights = highlightsData.filter(h => h[1] === studentName);
+    const studentHighlights = highlightsData.filter(h => h[2] === studentName);  // h[2] = C: 姓名
 
     console.log(`${studentName} 的打卡記錄: ${studentHighlights.length} 筆`);
 
     let highlightsHTML = '';
     if (studentHighlights.length > 0) {
         studentHighlights.forEach((highlight, index) => {
-            const date = formatDate(highlight[0]);
-            const content = highlight[2];
-            const method = highlight[3];
-            const article = highlight[4];  // 今日撰寫的文章（新增）
-            const extra = highlight[5];    // 想對同期戰友說的話（索引改變）
+            const timestamp = highlight[0];  // A: 時間戳記
+            const email = highlight[1];      // B: 電子郵件（不使用）
+            const name = highlight[2];       // C: 姓名
+            const dateStr = highlight[3];    // D: 打卡日期
+            const isCompleted = highlight[4]; // E: 是否完成
+            const content = highlight[5];    // F: 今日一句話亮點
+            const method = highlight[6];     // G: 萃取法
+            const article = highlight[7];    // H: 今日撰寫的文章
+            const extra = highlight[8];      // I: 想對戰友說的話
+            // highlight[9] = J: 遭遇問題
+
+            const date = formatDate(dateStr);
 
             // 生成文章區塊的 HTML
             const articleHTML = generateArticleHTML(article, `lookup-${index}`);
