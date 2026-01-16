@@ -135,106 +135,178 @@
         <!-- Tooltip for heatmap -->
         <div id="heatmapTooltip" class="heatmap-tooltip"></div>
 
-        <!-- 今日打卡動態 - 獨立全寬顯示 -->
-        <div class="today-checkin-status">
-            <h2>
-                <span class="section-icon"> 🔥 </span>
-                <span class="section-title"> 今日打卡動態 </span>
-            </h2>
+        <!-- 個人進度快覽 - 新增 -->
+        <div class="personal-overview-section">
+            <h3 class="overview-title">
+                <span style="font-size: 24px;"> 👤 </span>
+                <span> 我的進度快覽 </span>
+            </h3>
 
-            <!-- 打卡進度條 -->
-            <div class="today-progress-section">
-                <div class="checkin-numbers-compact">
-                    <span class="checkin-count" id="todayCheckins">-</span>
-                    <span class="checkin-separator">/</span>
-                    <span class="checkin-total" id="todayCheckinsTotal">-</span>
-                    <span class="checkin-unit"> 人 </span>
+            <!-- 學員選擇 -->
+            <div class="overview-student-selector">
+                <label for="overviewStudentSelect" class="selector-label"> 你是誰？</label>
+                <select id="overviewStudentSelect" class="overview-student-select" onchange="updatePersonalOverview()">
+                    <option value=""> 請選擇你的名字 </option>
+                </select>
+            </div>
+
+            <!-- 快速統計卡片 -->
+            <div class="overview-stats">
+                <div class="overview-stat-card">
+                    <div class="overview-stat-label"> 📅 累計打卡 </div>
+                    <div class="overview-stat-value">
+                        <span id="overviewTotalDays">-</span>
+                        <span class="overview-stat-unit"> 天 </span>
+                    </div>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="todayProgress" style="width: 0%"></div>
+                <div class="overview-stat-card">
+                    <div class="overview-stat-label"> 🏆 最高連續打卡 </div>
+                    <div class="overview-stat-value">
+                        <span id="overviewConsecutiveDays">-</span>
+                        <span class="overview-stat-unit"> 天 </span>
+                    </div>
                 </div>
-                <div class="checkin-rate-text">
-                    打卡率：<strong><span id="todayRateInline">-</span>%</strong>
+                <div class="overview-stat-card">
+                    <div class="overview-stat-label"> 🏆 里程碑徽章 </div>
+                    <div class="overview-stat-value" style="font-size: 24px;">
+                        <span id="overviewMilestones">-</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- 已打卡 / 未打卡統計 -->
-            <div class="checkin-stats-row">
-                <div class="checkin-stat-box checked">
-                    <div class="checkin-stat-label"> ✅ 已打卡 </div>
-                    <div class="checkin-stat-value" id="todayCheckedCount">-</div>
-                </div>
-                <div class="checkin-stat-box unchecked">
-                    <div class="checkin-stat-label"> ⏸️ 未打卡 </div>
-                    <div class="checkin-stat-value" id="todayUncheckedCount">-</div>
-                </div>
-            </div>
-
-            <!-- 刷新按鈕 -->
-            <button class="refresh-button-compact" onclick="refreshTodayStatus()"> 🔄 立即刷新 </button>
-
-            <!-- 學員列表切換按鈕 -->
-            <button class="toggle-section" onclick="toggleStudentList()" style="margin-top: 15px;">
-                <span id="toggleIcon">▼</span>
-                <span id="toggleText"> 查看學員列表 </span>
+            <!-- 展開完整日曆按鈕 -->
+            <button class="view-detail-button" onclick="togglePersonalCalendar()">
+                <span id="calendarToggleIcon">▼</span>
+                <span id="calendarToggleText"> 展開我的完整打卡日曆 </span>
             </button>
 
-            <!-- 學員列表 - 可折疊 -->
-            <div id="studentAvatarsContainer" style="display: none; margin-top: 15px;">
-                <h3 class="student-list-header checked-header">
-                    ✅ 已打卡 (<span id="checkedListCount">0</span>)
-                </h3>
-                <div class="student-avatars" id="checkedStudents"></div>
-
-                <h3 class="student-list-header unchecked-header">
-                    ⏸️ 未打卡 (<span id="uncheckedListCount">0</span>)
-                </h3>
-                <div class="student-avatars" id="uncheckedStudents"></div>
+            <!-- 完整日曆和記錄區域 - 預設收合 -->
+            <div id="personalCalendarContainer" style="display: none; margin-top: 20px;">
+                <!-- 日曆和詳細記錄將由 JavaScript 動態生成 -->
             </div>
         </div>
 
-        <!-- 兩欄資訊區域 -->
-        <div class="two-column-layout">
-            <!-- 連續打卡王 -->
-            <div class="leaderboard">
-                <h2>
-                    <span class="section-icon"> 🏅 </span>
-                    <span class="section-title"> 連續打卡王 </span>
-                </h2>
-                <div id="leaderboardList" class="loading"> 載入中 </div>
-                <div class="section-footer">
-                    <a id="statsSheetLink" target="_blank" class="view-all-link">
-                        📊 查看全部
-                    </a>
+        <!-- 今日打卡戰況 - 折疊選單 -->
+        <div class="today-battle-section visual-tertiary">
+            <button class="section-toggle-button" onclick="toggleTodayBattleSection()">
+                <div class="toggle-header">
+                    <div class="toggle-title">
+                        <span style="font-size: 28px;"> 🔥 </span>
+                        <span style="margin-left: 10px;"> 今日打卡戰況 </span>
+                    </div>
+                    <div class="toggle-icon" id="todayBattleToggleIcon">▼</div>
                 </div>
-            </div>
+                <div class="toggle-subtitle">
+                    <span id="todayBattleSubtitle"> 今日已有 <strong id="todayCheckinsSummary">-</strong> 人打卡，打卡率 <strong id="todayRateSummary">-</strong>%</span>
+                </div>
+            </button>
 
-            <!-- 每日亮點牆 -->
-            <div class="highlights">
-                <h2>
-                    <span class="section-icon"> 💡 </span>
-                    <span class="section-title"> 每日亮點牆 </span>
-                    <span class="section-subtitle">（今日）</span>
-                </h2>
-                <div id="highlightsList" class="loading"> 載入中 </div>
-                <div class="section-footer">
-                    <a id="highlightsSheetLink" target="_blank" class="view-all-link">
-                        📝 歷史記錄
-                    </a>
+            <!-- 折疊內容區域 - 預設收合 -->
+            <div id="todayBattleContent" style="display: none; margin-top: 20px;">
+                <!-- 進度條 - 移到最上方 -->
+                <div class="progress-bar" style="margin-bottom: 20px;">
+                    <div class="progress-fill" id="todayProgress" style="width: 0%"></div>
+                </div>
+
+                <!-- 核心統計資訊 -->
+                <div class="battle-stats">
+                    <div class="battle-stat-item">
+                        <div class="battle-stat-label"> 打卡進度 </div>
+                        <div class="battle-stat-value">
+                            <span class="checkin-count" id="todayCheckins">-</span>
+                            <span class="checkin-separator">/</span>
+                            <span class="checkin-total" id="todayCheckinsTotal">-</span>
+                            <span class="checkin-unit"> 人 </span>
+                        </div>
+                    </div>
+                    <div class="battle-stat-item">
+                        <div class="battle-stat-label"> 打卡率 </div>
+                        <div class="battle-stat-value">
+                            <span class="checkin-rate" id="todayRateInline">-</span>
+                            <span class="checkin-unit">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 已打卡 / 未打卡統計 -->
+                <div class="checkin-stats-row">
+                    <div class="checkin-stat-box checked">
+                        <div class="checkin-stat-label"> ✅ 已打卡 </div>
+                        <div class="checkin-stat-value" id="todayCheckedCount">-</div>
+                    </div>
+                    <div class="checkin-stat-box unchecked">
+                        <div class="checkin-stat-label"> ⏸️ 未打卡 </div>
+                        <div class="checkin-stat-value" id="todayUncheckedCount">-</div>
+                    </div>
+                </div>
+
+                <!-- 查看詳細名單並刷新按鈕 - 合併 -->
+                <button class="detail-toggle-button" onclick="toggleStudentListAndRefresh()">
+                    <span id="toggleIcon">▼</span>
+                    <span id="toggleText"> 查看詳細打卡名單（點擊自動刷新）</span>
+                </button>
+
+                <!-- 學員列表 - 可折疊 -->
+                <div id="studentAvatarsContainer" style="display: none; margin-top: 15px;">
+                    <h3 class="student-list-header checked-header">
+                        ✅ 已打卡 (<span id="checkedListCount">0</span>)
+                    </h3>
+                    <div class="student-avatars" id="checkedStudents"></div>
+
+                    <h3 class="student-list-header unchecked-header">
+                        ⏸️ 未打卡 (<span id="uncheckedListCount">0</span>)
+                    </h3>
+                    <div class="student-avatars" id="uncheckedStudents"></div>
                 </div>
             </div>
         </div>
 
-        <!-- 區塊 4: 個人打卡查詢 -->
-        <div class="personal-lookup">
-            <h2> 個人打卡查詢 </h2>
-            <div class="lookup-controls">
-                <select id="studentSelect">
-                    <option value=""> 請選擇學員 </option>
-                </select>
-                <button onclick="lookupStudent()"> 查詢 </button>
+        <!-- 看看其他復盤戰友 - 折疊選單 -->
+        <div class="teammates-section visual-tertiary">
+            <button class="section-toggle-button" onclick="toggleTeammatesSection()">
+                <div class="toggle-header">
+                    <div class="toggle-title">
+                        <span style="font-size: 28px;"> 👥 </span>
+                        <span style="margin-left: 10px;"> 看看其他復盤戰友 </span>
+                    </div>
+                    <div class="toggle-icon" id="teammatesToggleIcon">▼</div>
+                </div>
+                <div class="toggle-subtitle"> 查看戰友們的打卡排行與今日亮點分享 </div>
+            </button>
+
+            <!-- 折疊內容區域 - 預設收合 -->
+            <div id="teammatesContent" style="display: none; margin-top: 20px;">
+                <!-- 雙欄佈局 -->
+                <div class="two-column-layout">
+                    <!-- 最高連續打卡王 -->
+                    <div class="leaderboard visual-secondary">
+                        <div class="section-header-with-link">
+                            <h2>
+                                <span class="section-icon"> 🏅 </span>
+                                <span class="section-title"> 最高連續打卡王 </span>
+                            </h2>
+                            <a id="statsSheetLink" target="_blank" class="header-link">
+                                📊 查看完整排行
+                            </a>
+                        </div>
+                        <div id="leaderboardList" class="loading"> 載入中 </div>
+                    </div>
+
+                    <!-- 每日亮點牆 -->
+                    <div class="highlights visual-secondary">
+                        <div class="section-header-with-link">
+                            <h2>
+                                <span class="section-icon"> 💡 </span>
+                                <span class="section-title"> 今日亮點精選 </span>
+                            </h2>
+                            <a id="highlightsSheetLink" target="_blank" class="header-link">
+                                📝 歷史記錄
+                            </a>
+                        </div>
+                        <div id="highlightsList" class="loading"> 載入中 </div>
+                    </div>
+                </div>
             </div>
-            <div id="personalResult"></div>
         </div>
     </div>
 

@@ -40,9 +40,14 @@
 
 ## 🚀 快速開始
 
-### Phase 1: 設定 Google Form + Sheet
+### 給學員
+- **[課前操作指南](課前操作指南.md)** - 上課前的準備步驟
 
-請參考 [`docs/Phase1-完整指南.md`](docs/Phase1-完整指南.md)
+### 給管理員
+
+#### Phase 1: 設定 Google Form + Sheet
+
+請參考 [`docs/技術文檔/Phase1-完整指南.md`](docs/技術文檔/Phase1-完整指南.md)
 
 **步驟摘要：**
 1. 建立 Google Form 表單
@@ -53,43 +58,88 @@
 6. 設定自動觸發器
 7. 產生公開 CSV 連結
 
-### Phase 2: 部署儀表板
+#### Phase 2: 部署儀表板
 
-請參考 [`docs/部署指南-GitHub-Pages.md`](docs/部署指南-GitHub-Pages.md)
+請參考 [`docs/部署與維護/部署指南-GitHub-Pages.md`](docs/部署與維護/部署指南-GitHub-Pages.md)
 
 **步驟摘要：**
-1. 修改 `dashboard-wired.html` 的 SHEET_ID 和 GID
+1. 修改 `js/config.js` 的 SHEET_ID 和 GID
 2. 推送到 GitHub
 3. 啟用 GitHub Pages
 4. 分享儀表板網址給學員
+
+#### Phase 3: 正式上線
+
+請參考 [`docs/部署與維護/正式上線準備指南.md`](docs/部署與維護/正式上線準備指南.md)
+
+**檢查清單：**
+1. 清空測試資料
+2. 設定正確的課程開始日期
+3. 將 TEST_TODAY_DATE 改為 null
+4. 執行完整測試流程
+
+## 📚 完整文檔
+
+所有文檔已整理分類，請參閱：
+- **[文檔索引](docs/README.md)** - 📖 完整文件導覽
+- **[最高連續打卡說明](docs/技術文檔/最高連續打卡完整說明.md)** - ⭐ 核心邏輯詳解
+- **[問題診斷步驟](docs/部署與維護/問題診斷步驟.md)** - 🔧 遇到問題時參考
 
 ## 📁 檔案結構
 
 ```
 vibeCoding_dailyCheckIn/
-├── README.md                           # 專案說明
-├── 課前操作指南.md                       # 課前設定步驟
-├── index.html                          # 重定向頁面
-├── dashboard-wired.html                # 主要儀表板（217 行，模組化）
-├── css/                                # 樣式檔案
-│   └── dashboard.css                   # 儀表板樣式（1324 行）
-├── js/                                 # JavaScript 模組
-│   ├── config.js                       # 配置常數（SHEET_ID, GID, 課程日期）
-│   ├── cache.js                        # LocalStorage 緩存管理
-│   ├── data.js                         # CSV 解析與資料載入
-│   ├── dashboard.js                    # 業務邏輯與 UI 渲染（637 行）
-│   └── main.js                         # 應用程式入口
-├── docs/                               # 文件資料夾
-│   ├── Phase1-完整指南.md               # Phase 1 設定指南
-│   ├── 部署指南-GitHub-Pages.md         # 部署指南
-│   └── Google-Form-自動日期設定.md      # 自動日期功能
-├── scripts/                            # 腳本資料夾
-│   ├── apps-script-code-optimized.js   # 優化版 Apps Script
-│   └── 設定多個自動觸發器.js             # 觸發器設定腳本
-└── dashboards/                         # 其他儀表板版本
-    ├── dashboard-chakra.html
-    ├── dashboard-chakra-fast.html
-    └── dashboard-nes.html
+├── README.md                           # 📘 專案說明
+├── 課前操作指南.md                      # 📖 學員快速開始
+├── CLAUDE.md                          # 🤖 Claude Code 配置
+│
+├── dashboard-wired.html                # 🎨 主要儀表板（手繪風格）
+├── index.html                          # 🔗 重定向頁面
+│
+├── css/                                # 🎨 樣式檔案
+│   └── dashboard.css                   # 儀表板樣式
+│
+├── js/                                 # 💻 JavaScript 模組
+│   ├── config.js                       # ⚙️ 配置常數（SHEET_ID, 課程日期）
+│   ├── cache.js                        # 💾 LocalStorage 緩存管理
+│   ├── data.js                         # 📊 CSV 解析與資料載入
+│   ├── dashboard.js                    # 🎯 業務邏輯與 UI 渲染
+│   └── main.js                         # 🚀 應用程式入口
+│
+├── scripts/                            # 📜 Apps Script 腳本
+│   ├── Code_CLEAN.js                   # ⭐ 主要計算邏輯（最高連續）
+│   ├── Code.js                         # 舊版腳本（保留參考）
+│   └── WeeklyReport.js                 # 📧 每週報告生成
+│
+├── docs/                               # 📚 完整文檔（分類整理）
+│   ├── README.md                       # 📖 文檔索引
+│   │
+│   ├── 使用指南/                       # 👥 給使用者
+│   │   ├── 儀表板使用說明.md
+│   │   └── 儀表板測試指南.md
+│   │
+│   ├── 部署與維護/                     # 🔧 部署和維護
+│   │   ├── 正式上線準備指南.md         # ⭐ 上線檢查清單
+│   │   ├── 問題診斷步驟.md             # ⭐ 問題排查
+│   │   ├── 部署指南-GitHub-Pages.md
+│   │   ├── 設定自動執行教學.md
+│   │   ├── 觸發器頻率建議.md
+│   │   ├── 測試資料使用說明.md
+│   │   └── 5week-reflection-checkin-system-spec.md
+│   │
+│   └── 技術文檔/                       # 💻 技術細節
+│       ├── 最高連續打卡完整說明.md     # ⭐ 核心邏輯（推薦閱讀）
+│       ├── Phase1-完整指南.md
+│       ├── Google-Sheet-Links.md
+│       ├── Google-Form-自動日期設定.md
+│       └── 100學員優化方案.md
+│
+├── dashboards/                         # 🎨 其他儀表板版本
+│   ├── dashboard-chakra.html           # Chakra UI 風格
+│   ├── dashboard-chakra-fast.html      # Chakra UI + 性能優化
+│   └── dashboard-nes.html              # 8-bit 像素風格
+│
+└── test-data-2026.csv                  # 🧪 測試資料
 ```
 
 ## 🎯 適用場景

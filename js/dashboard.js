@@ -33,6 +33,12 @@ export function renderStatsBanner() {
     document.getElementById('todayCheckinsTotal').textContent = totalStudents;
     document.getElementById('todayRateInline').textContent = todayRate;
 
+    // 更新副標題摘要
+    const summaryCheckins = document.getElementById('todayCheckinsSummary');
+    const summaryRate = document.getElementById('todayRateSummary');
+    if (summaryCheckins) summaryCheckins.textContent = todayCheckins;
+    if (summaryRate) summaryRate.textContent = todayRate;
+
     // 更新進度條
     const progressBar = document.getElementById('todayProgress');
     progressBar.style.width = todayRate + '%';
@@ -509,7 +515,7 @@ function startCooldown(button, seconds) {
 }
 
 // ============================================
-// 渲染連續打卡王排行榜
+// 渲染最高連續打卡王排行榜
 // ============================================
 export function renderLeaderboard() {
     const leaderboardList = document.getElementById('leaderboardList');
@@ -742,13 +748,548 @@ function formatDate(dateStr) {
 // 個人查詢
 // ============================================
 export function populateStudentSelect() {
-    const select = document.getElementById('studentSelect');
-    statsData.forEach(student => {
-        const option = document.createElement('option');
-        option.value = student[0];
-        option.textContent = student[0];
-        select.appendChild(option);
+    // 填充個人快覽的下拉選單
+    const overviewSelect = document.getElementById('overviewStudentSelect');
+    if (overviewSelect) {
+        statsData.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student[0];
+            option.textContent = student[0];
+            overviewSelect.appendChild(option);
+        });
+    }
+}
+
+/**
+ * 更新個人進度快覽（當用戶選擇學員時調用）
+ */
+window.updatePersonalOverview = function() {
+    const select = document.getElementById('overviewStudentSelect');
+    const studentName = select.value;
+
+    if (!studentName) {
+        // 清空數據
+        document.getElementById('overviewTotalDays').textContent = '-';
+        document.getElementById('overviewConsecutiveDays').textContent = '-';
+        document.getElementById('overviewMilestones').textContent = '-';
+
+        // 隱藏日曆區域
+        const calendarContainer = document.getElementById('personalCalendarContainer');
+        if (calendarContainer) {
+            calendarContainer.style.display = 'none';
+            calendarContainer.innerHTML = '';
+        }
+
+        // 重置按鈕狀態
+        const icon = document.getElementById('calendarToggleIcon');
+        const text = document.getElementById('calendarToggleText');
+        if (icon) icon.textContent = '▼';
+        if (text) text.textContent = '展開我的完整打卡日曆';
+
+        return;
+    }
+
+    const student = statsData.find(s => s[0] === studentName);
+
+    if (!student) {
+        console.warn(`找不到學員 ${studentName}`);
+        return;
+    }
+
+    const totalDays = student[1] || 0;
+    const consecutiveDays = student[2] || 0;
+    const milestones = getMilestones(student) || '-';
+
+    // 更新統計數據
+    document.getElementById('overviewTotalDays').textContent = totalDays;
+    document.getElementById('overviewConsecutiveDays').textContent = consecutiveDays;
+    document.getElementById('overviewMilestones').textContent = milestones;
+
+    console.log(`個人快覽已更新：${studentName} - 累計 ${totalDays} 天，連續 ${consecutiveDays} 天`);
+
+    // 【修復】如果日曆已經展開，自動重新生成日曆內容
+    const calendarContainer = document.getElementById('personalCalendarContainer');
+    if (calendarContainer && calendarContainer.style.display === 'block') {
+        console.log(`日曆已展開，自動更新為 ${studentName} 的日曆`);
+
+        // 重新生成日曆
+        const studentHighlights = highlightsData.filter(h => h[2] === studentName);
+        const calendarHTML = generatePersonalCalendar(studentHighlights, COURSE_START_DATE);
+
+        // 生成詳細記錄
+        let highlightsHTML = '';
+        if (studentHighlights.length > 0) {
+            studentHighlights.forEach((highlight, index) => {
+                const dateStr = highlight[3];
+                const content = highlight[5];
+                const method = highlight[6];
+                const article = highlight[7];
+                const extra = highlight[8];
+
+                const date = formatDate(dateStr);
+                const articleHTML = generateArticleHTML(article, `overview-${index}`);
+
+                highlightsHTML += `
+                    <div class="highlight-card" style="margin-bottom: 15px;">
+                        <div class="highlight-header">
+                            <div class="highlight-date" style="font-size: 20px; color: #FF6B35; font-weight: 900;">📅 ${date}</div>
+                        </div>
+                        <div class="highlight-content" style="font-size: 19px;">💡 ${content}</div>
+                        ${method ? `<span class="highlight-method" style="font-size: 15px;">${method}</span>` : ''}
+                        ${articleHTML}
+                        ${extra ? `<div class="highlight-extra" style="font-size: 16px;">💬 ${extra}</div>` : ''}
+                    </div>
+                `;
+            });
+        } else {
+            highlightsHTML = '<div style="text-align: center; padding: 40px; color: #999; font-size: 18px;">尚無打卡記錄</div>';
+        }
+
+        const fullHTML = `
+            <!-- 35 天打卡日曆 -->
+            <div style="margin-bottom: 30px;">
+                ${calendarHTML}
+            </div>
+
+            <!-- 完整打卡記錄 - 預設收合 -->
+            <div style="margin-top: 30px;">
+                <button class="detail-toggle-button" onclick="toggleOverviewDetailRecords()">
+                    <span id="overviewDetailRecordsIcon">▼</span>
+                    <span id="overviewDetailRecordsText">展開查看完整打卡記錄 (共 ${studentHighlights.length} 筆)</span>
+                </button>
+                <div id="overviewDetailRecordsContent" style="display: none; margin-top: 20px; max-height: 600px; overflow-y: auto;">
+                    ${highlightsHTML}
+                </div>
+            </div>
+        `;
+
+        calendarContainer.innerHTML = fullHTML;
+        console.log(`✅ 日曆已更新為 ${studentName} 的內容`);
+    }
+};
+
+/**
+ * 切換個人完整日曆的顯示（在快覽區域內展開）
+ */
+window.togglePersonalCalendar = function() {
+    const select = document.getElementById('overviewStudentSelect');
+    const studentName = select.value;
+
+    if (!studentName) {
+        alert('請先選擇你的名字');
+        select.focus();
+        return;
+    }
+
+    const container = document.getElementById('personalCalendarContainer');
+    const icon = document.getElementById('calendarToggleIcon');
+    const text = document.getElementById('calendarToggleText');
+
+    if (container.style.display === 'none' || !container.style.display) {
+        // 展開：生成並顯示完整日曆
+        const studentHighlights = highlightsData.filter(h => h[2] === studentName);
+        const calendarHTML = generatePersonalCalendar(studentHighlights, COURSE_START_DATE);
+
+        // 生成詳細記錄
+        let highlightsHTML = '';
+        if (studentHighlights.length > 0) {
+            studentHighlights.forEach((highlight, index) => {
+                const dateStr = highlight[3];
+                const content = highlight[5];
+                const method = highlight[6];
+                const article = highlight[7];
+                const extra = highlight[8];
+
+                const date = formatDate(dateStr);
+                const articleHTML = generateArticleHTML(article, `overview-${index}`);
+
+                highlightsHTML += `
+                    <div class="highlight-card" style="margin-bottom: 15px;">
+                        <div class="highlight-header">
+                            <div class="highlight-date" style="font-size: 20px; color: #FF6B35; font-weight: 900;">📅 ${date}</div>
+                        </div>
+                        <div class="highlight-content" style="font-size: 19px;">💡 ${content}</div>
+                        ${method ? `<span class="highlight-method" style="font-size: 15px;">${method}</span>` : ''}
+                        ${articleHTML}
+                        ${extra ? `<div class="highlight-extra" style="font-size: 16px;">💬 ${extra}</div>` : ''}
+                    </div>
+                `;
+            });
+        } else {
+            highlightsHTML = '<div style="text-align: center; padding: 40px; color: #999; font-size: 18px;">尚無打卡記錄</div>';
+        }
+
+        const fullHTML = `
+            <!-- 35 天打卡日曆 -->
+            <div style="margin-bottom: 30px;">
+                ${calendarHTML}
+            </div>
+
+            <!-- 完整打卡記錄 - 預設收合 -->
+            <div style="margin-top: 30px;">
+                <button class="detail-toggle-button" onclick="toggleOverviewDetailRecords()">
+                    <span id="overviewDetailRecordsIcon">▼</span>
+                    <span id="overviewDetailRecordsText">展開查看完整打卡記錄 (共 ${studentHighlights.length} 筆)</span>
+                </button>
+                <div id="overviewDetailRecordsContent" style="display: none; margin-top: 20px; max-height: 600px; overflow-y: auto;">
+                    ${highlightsHTML}
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = fullHTML;
+        container.style.display = 'block';
+        icon.textContent = '▲';
+        text.textContent = '收合完整打卡日曆';
+
+        // 平滑滾動到日曆
+        setTimeout(() => {
+            container.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }, 100);
+    } else {
+        // 收合
+        container.style.display = 'none';
+        icon.textContent = '▼';
+        text.textContent = '展開我的完整打卡日曆';
+    }
+};
+
+/**
+ * 切換個人快覽中的詳細記錄
+ */
+window.toggleOverviewDetailRecords = function() {
+    const content = document.getElementById('overviewDetailRecordsContent');
+    const icon = document.getElementById('overviewDetailRecordsIcon');
+    const text = document.getElementById('overviewDetailRecordsText');
+
+    if (!content || !icon || !text) return;
+
+    if (content.style.display === 'none' || !content.style.display) {
+        content.style.display = 'block';
+        icon.textContent = '▲';
+        text.textContent = text.textContent.replace('展開', '收合');
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▼';
+        text.textContent = text.textContent.replace('收合', '展開');
+    }
+};
+
+/**
+ * 切換今日打卡戰況區塊
+ */
+window.toggleTodayBattleSection = function() {
+    const content = document.getElementById('todayBattleContent');
+    const icon = document.getElementById('todayBattleToggleIcon');
+
+    if (!content || !icon) return;
+
+    if (content.style.display === 'none' || !content.style.display) {
+        content.style.display = 'block';
+        icon.textContent = '▲';
+        icon.classList.add('open');
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▼';
+        icon.classList.remove('open');
+    }
+};
+
+/**
+ * 切換學員列表並自動刷新
+ */
+window.toggleStudentListAndRefresh = async function() {
+    const container = document.getElementById('studentAvatarsContainer');
+    const icon = document.getElementById('toggleIcon');
+    const buttonText = document.getElementById('toggleText');
+
+    if (!container || !icon || !buttonText) {
+        console.error('toggleStudentListAndRefresh: 找不到必要的 DOM 元素');
+        return;
+    }
+
+    if (container.style.display === 'none' || !container.style.display) {
+        // 展開前先刷新數據
+        buttonText.textContent = '⏳ 刷新中...';
+
+        try {
+            const { loadData } = await import('./data.js');
+            await loadData(false); // 強制從遠端載入
+
+            // 刷新完成後展開
+            renderTodayCheckinStatus();
+            container.style.display = 'block';
+            container.style.opacity = '1';
+            container.style.transform = 'translateY(0)';
+            icon.textContent = '▲';
+            buttonText.textContent = '收起學員列表';
+
+            // 平滑滾動到容器
+            setTimeout(() => {
+                container.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }, 100);
+        } catch (error) {
+            console.error('刷新失敗:', error);
+            buttonText.textContent = '查看詳細打卡名單（點擊自動刷新）';
+        }
+    } else {
+        // 收起 - 使用動畫效果
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(-10px)';
+
+        setTimeout(() => {
+            container.style.display = 'none';
+        }, 300);
+
+        icon.textContent = '▼';
+        buttonText.textContent = '查看詳細打卡名單（點擊自動刷新）';
+    }
+};
+
+/**
+ * 切換復盤戰友風采區塊
+ */
+window.toggleTeammatesSection = function() {
+    const content = document.getElementById('teammatesContent');
+    const icon = document.getElementById('teammatesToggleIcon');
+
+    if (!content || !icon) return;
+
+    if (content.style.display === 'none' || !content.style.display) {
+        // 展開前先渲染數據（如果還沒渲染）
+        const leaderboardList = document.getElementById('leaderboardList');
+        if (leaderboardList && leaderboardList.classList.contains('loading')) {
+            renderLeaderboard();
+            renderHighlights();
+            syncSectionHeights();
+        }
+
+        content.style.display = 'block';
+        icon.textContent = '▲';
+        icon.classList.add('open');
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▼';
+        icon.classList.remove('open');
+    }
+};
+
+/**
+ * 生成個人 35 天打卡方格日曆
+ */
+function generatePersonalCalendar(studentHighlights, courseStartDate) {
+    console.log('==================== 生成個人日曆 ====================');
+    console.log('學員打卡記錄總數:', studentHighlights.length);
+
+    // 提取已打卡的日期（只計算「✅ 是，已完成」的記錄）
+    const checkedDates = new Set();
+    const parsedDates = []; // 用於 debug
+
+    studentHighlights.forEach((h, index) => {
+        const isCompleted = h[4]; // E: 是否完成
+        const dateStr = h[3]; // D: 打卡日期
+
+        if (index < 3) {
+            console.log(`記錄 ${index + 1}:`, {
+                姓名: h[2],
+                打卡日期原始值: dateStr,
+                是否完成: isCompleted,
+                日期類型: typeof dateStr
+            });
+        }
+
+        if (isCompleted === "✅ 是，已完成") {
+            let date;
+            let parseMethod = '';
+
+            if (typeof dateStr === 'string') {
+                // 處理字串格式
+                const datePart = dateStr.trim().split(' ')[0]; // 取日期部分，忽略時間
+
+                // 嘗試不同的解析方式
+                if (datePart.includes('/')) {
+                    // 格式: 2025/12/7 或 2025/1/9
+                    const parts = datePart.split('/');
+                    if (parts.length === 3) {
+                        const year = parseInt(parts[0]);
+                        const month = parseInt(parts[1]) - 1; // JavaScript 月份從 0 開始
+                        const day = parseInt(parts[2]);
+                        date = new Date(year, month, day);
+                        parseMethod = 'manual-split';
+                    }
+                } else if (datePart.includes('-')) {
+                    // 格式: 2025-12-07
+                    date = new Date(datePart);
+                    parseMethod = 'native-parse';
+                } else {
+                    // 其他格式，嘗試直接解析
+                    date = new Date(datePart);
+                    parseMethod = 'fallback';
+                }
+            } else {
+                // 如果已經是 Date 物件
+                date = new Date(dateStr);
+                parseMethod = 'date-object';
+            }
+
+            // 檢查日期是否有效
+            if (date && !isNaN(date.getTime())) {
+                // 格式化為 YYYY-MM-DD 用於比對
+                const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                checkedDates.add(dateKey);
+                parsedDates.push({
+                    原始: dateStr,
+                    解析後: dateKey,
+                    方法: parseMethod
+                });
+
+                if (index < 3) {
+                    console.log(`  ✅ 解析成功: ${dateStr} -> ${dateKey} (${parseMethod})`);
+                }
+            } else {
+                console.warn(`  ❌ 日期解析失敗: ${dateStr}`);
+            }
+        }
     });
+
+    console.log('已完成打卡的日期:', Array.from(checkedDates).sort());
+    console.log('解析詳情（前5筆）:', parsedDates.slice(0, 5));
+
+    // 生成 35 天的日期陣列
+    const calendarDays = [];
+    const startDate = new Date(courseStartDate);
+    const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
+    today.setHours(0, 0, 0, 0);
+
+    console.log('課程開始日期:', startDate.toLocaleDateString());
+    console.log('今天日期:', today.toLocaleDateString());
+    console.log('生成 35 天日曆...');
+
+    for (let i = 0; i < 35; i++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + i);
+        currentDate.setHours(0, 0, 0, 0); // 確保時間為 00:00:00
+
+        const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+        const dayOfWeek = currentDate.getDay();
+        const isChecked = checkedDates.has(dateKey);
+        const isFuture = currentDate > today;
+        const weekNumber = Math.floor(i / 7) + 1;
+
+        calendarDays.push({
+            date: currentDate,
+            dateKey: dateKey,
+            dayOfWeek: dayOfWeek,
+            displayDate: `${currentDate.getMonth() + 1}/${currentDate.getDate()}`,
+            isChecked: isChecked,
+            isFuture: isFuture,
+            weekNumber: weekNumber,
+            dayInWeek: i % 7
+        });
+
+        // Debug: 顯示前 7 天和已打卡的日期
+        if (i < 7 || isChecked) {
+            console.log(`  第 ${i + 1} 天 (${dateKey}): ${isChecked ? '✅ 已打卡' : isFuture ? '⏰ 未來' : '⭕ 未打卡'}`);
+        }
+    }
+
+    console.log('日曆生成完成，總共', calendarDays.filter(d => d.isChecked).length, '天已打卡');
+    console.log('====================================================');
+
+    // 生成 HTML
+    let html = `
+        <div class="personal-calendar-container">
+            <h3 style="margin-bottom: 20px; font-size: 24px; font-weight: 900; color: #2C3E50; border-bottom: 3px solid #2C3E50; padding-bottom: 10px;">
+                📅 我的 35 天打卡日曆
+            </h3>
+            <div class="calendar-legend" style="display: flex; gap: 20px; margin-bottom: 20px; font-size: 15px; font-weight: 700;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #FF6B35 0%, #FF8C52 100%); border: 3px solid #2C3E50; border-radius: 4px;"></div>
+                    <span>已打卡</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 24px; height: 24px; background: white; border: 3px solid #2C3E50; border-radius: 4px;"></div>
+                    <span>未打卡</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 24px; height: 24px; background: #F0F0F0; border: 3px solid #DDD; border-radius: 4px;"></div>
+                    <span>未來日期</span>
+                </div>
+            </div>
+    `;
+
+    // 按週生成日曆
+    for (let week = 1; week <= 5; week++) {
+        const weekDays = calendarDays.filter(d => d.weekNumber === week);
+
+        html += `
+            <div class="calendar-week" style="margin-bottom: 25px;">
+                <div class="week-label" style="font-size: 18px; font-weight: 900; color: #666; margin-bottom: 12px;">第 ${week} 週</div>
+                <div class="week-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;">
+        `;
+
+        weekDays.forEach(day => {
+            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+            let boxStyle = '';
+            let contentHTML = '';
+
+            if (day.isFuture) {
+                // 未來日期：灰色
+                boxStyle = 'background: #F0F0F0; border: 3px solid #DDD; color: #999;';
+                contentHTML = `
+                    <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">週${dayNames[day.dayOfWeek]}</div>
+                    <div style="font-size: 12px; font-weight: 700; margin-top: 4px; opacity: 0.5;">${day.displayDate}</div>
+                `;
+            } else if (day.isChecked) {
+                // 已打卡：橘色漸層 + 超大白色勾勾
+                boxStyle = 'background: linear-gradient(135deg, #FF6B35 0%, #FF8C52 100%); border: 4px solid #2C3E50; color: white; box-shadow: 4px 4px 0px rgba(44, 62, 80, 0.4);';
+                contentHTML = `
+                    <div style="font-size: 12px; font-weight: 700; margin-bottom: 2px; opacity: 0.9;">週${dayNames[day.dayOfWeek]}</div>
+                    <div style="font-size: 48px; font-weight: 900; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.2);">✓</div>
+                    <div style="font-size: 11px; font-weight: 700; margin-top: 2px; opacity: 0.9;">${day.displayDate}</div>
+                `;
+            } else {
+                // 未打卡：白色空框
+                boxStyle = 'background: white; border: 3px solid #2C3E50; color: #2C3E50;';
+                contentHTML = `
+                    <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">週${dayNames[day.dayOfWeek]}</div>
+                    <div style="height: 48px;"></div>
+                    <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">${day.displayDate}</div>
+                `;
+            }
+
+            html += `
+                <div style="${boxStyle} padding: 12px; border-radius: 8px; text-align: center; position: relative; transition: all 0.2s ease; min-height: 100px;">
+                    ${contentHTML}
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+            </div>
+        `;
+    }
+
+    html += `
+            <div class="calendar-summary" style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #FFF4E8 0%, #FFE8CC 100%); border: 4px solid #2C3E50; border-radius: 8px; box-shadow: 4px 4px 0px #2C3E50; text-align: center;">
+                <div style="font-size: 18px; font-weight: 900; color: #2C3E50; margin-bottom: 8px;">
+                    已完成 <span style="font-size: 32px; color: #FF6B35;">${checkedDates.size}</span> / 35 天
+                </div>
+                <div style="font-size: 15px; font-weight: 700; color: #666;">
+                    完成率：${Math.round((checkedDates.size / 35) * 100)}%
+                </div>
+            </div>
+        </div>
+    `;
+
+    return html;
 }
 
 export function lookupStudent() {
@@ -811,31 +1352,40 @@ export function lookupStudent() {
         highlightsHTML = '<div style="text-align: center; padding: 40px; color: #999; font-size: 18px;">尚無打卡記錄</div>';
     }
 
+    // 生成 35 天打卡日曆
+    const calendarHTML = generatePersonalCalendar(studentHighlights, COURSE_START_DATE);
+
     const html = `
+        <!-- 35 天打卡日曆 - 最優先顯示 -->
+        <div style="margin-top: 25px; margin-bottom: 35px;">
+            ${calendarHTML}
+        </div>
+
+        <!-- 快速統計卡片 - 精簡版三欄 -->
         <div class="personal-stats">
             <div class="personal-stat-box">
-                <div class="personal-stat-label">累計打卡天數</div>
-                <div class="personal-stat-value">${totalDays} 天</div>
+                <div class="personal-stat-label">📅 累計打卡</div>
+                <div class="personal-stat-value">${totalDays} <span style="font-size: 16px; color: #999;">天</span></div>
             </div>
             <div class="personal-stat-box">
-                <div class="personal-stat-label">連續打卡天數</div>
-                <div class="personal-stat-value">🔥 ${consecutiveDays} 天</div>
+                <div class="personal-stat-label">🏆 最高連續</div>
+                <div class="personal-stat-value">${consecutiveDays} <span style="font-size: 16px; color: #999;">天</span></div>
             </div>
             <div class="personal-stat-box">
-                <div class="personal-stat-label">最近打卡日期</div>
-                <div class="personal-stat-value">${lastDate || '-'}</div>
-            </div>
-            <div class="personal-stat-box">
-                <div class="personal-stat-label">已達成里程碑</div>
-                <div class="personal-stat-value">${milestones}</div>
+                <div class="personal-stat-label">🏆 里程碑</div>
+                <div class="personal-stat-value" style="font-size: 18px;">${milestones || '尚未達成'}</div>
             </div>
         </div>
 
-        <h3 style="margin-top: 30px; margin-bottom: 15px; font-size: 24px; font-weight: 900; color: #2C3E50; border-bottom: 3px solid #2C3E50; padding-bottom: 10px;">
-            📝 完整打卡記錄 (共 ${studentHighlights.length} 天)
-        </h3>
-        <div style="max-height: 600px; overflow-y: auto;">
-            ${highlightsHTML}
+        <!-- 完整打卡記錄 - 預設收合 -->
+        <div style="margin-top: 30px;">
+            <button class="detail-toggle-button" onclick="toggleDetailRecords()">
+                <span id="detailRecordsIcon">▼</span>
+                <span id="detailRecordsText">展開查看完整打卡記錄 (共 ${studentHighlights.length} 筆)</span>
+            </button>
+            <div id="detailRecordsContent" style="display: none; margin-top: 20px; max-height: 600px; overflow-y: auto;">
+                ${highlightsHTML}
+            </div>
         </div>
     `;
 
@@ -866,3 +1416,45 @@ export function syncSectionHeights() {
         console.log(`同步高度: 排行榜 ${leaderboardHeight}px -> 亮點牆 (height & max-height set)`);
     }
 }
+
+// ============================================
+// Toggle 區塊展開/收合
+// ============================================
+window.toggleSection = function(sectionId) {
+    const content = document.getElementById(sectionId + 'Content');
+    const icon = document.getElementById(sectionId + 'Icon');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.classList.add('open');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('open');
+    }
+};
+
+// ============================================
+// Toggle 個人查詢詳細記錄
+// ============================================
+window.toggleDetailRecords = function() {
+    const content = document.getElementById('detailRecordsContent');
+    const icon = document.getElementById('detailRecordsIcon');
+    const text = document.getElementById('detailRecordsText');
+
+    if (!content || !icon || !text) {
+        console.error('toggleDetailRecords: 找不到必要的 DOM 元素');
+        return;
+    }
+
+    if (content.style.display === 'none' || !content.style.display) {
+        // 展開
+        content.style.display = 'block';
+        icon.textContent = '▲';
+        text.textContent = text.textContent.replace('展開', '收合');
+    } else {
+        // 收合
+        content.style.display = 'none';
+        icon.textContent = '▼';
+        text.textContent = text.textContent.replace('收合', '展開');
+    }
+};
