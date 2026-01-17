@@ -978,8 +978,27 @@
                 font-size: 13px;
                 padding: 10px 14px;
                 min-width: 180px;
-                max-width: 300px;
+                max-width: calc(100vw - 40px);
                 margin-bottom: 15px;
+                /* 防止超出螢幕邊界 */
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%);
+            }
+
+            /* 左側里程碑的 tooltip 向右偏移 */
+            .milestone[style*="left: 20%"] .milestone-tooltip,
+            .milestone[style*="left: 40%"] .milestone-tooltip {
+                left: 0 !important;
+                transform: translateX(0);
+            }
+
+            /* 右側里程碑的 tooltip 向左偏移 */
+            .milestone[style*="left: 80%"] .milestone-tooltip,
+            .milestone[style*="left: 100%"] .milestone-tooltip {
+                left: auto !important;
+                right: 0 !important;
+                transform: translateX(0);
             }
 
             .milestone-tooltip::after {
@@ -990,6 +1009,13 @@
                 border-width: 5px;
                 margin-top: -3px;
             }
+
+            /* 熱力圖 tooltip 手機版 */
+            .heatmap-tooltip {
+                font-size: 14px;
+                padding: 8px 12px;
+                max-width: calc(100vw - 40px);
+            }
         }
 
         /* 超小手機螢幕 */
@@ -997,9 +1023,14 @@
             .milestone-tooltip {
                 font-size: 12px;
                 padding: 8px 12px;
-                min-width: 160px;
-                max-width: 260px;
+                min-width: 140px;
+                max-width: calc(100vw - 30px);
                 margin-bottom: 12px;
+            }
+
+            .heatmap-tooltip {
+                font-size: 13px;
+                padding: 6px 10px;
             }
         }
 
@@ -1789,6 +1820,90 @@
             .highlights {
                 max-height: none;
                 overflow-y: visible;
+                padding: 20px;
+            }
+
+            /* 亮點卡片手機版 RWD */
+            .highlight-card {
+                padding: 15px;
+                margin-bottom: 15px;
+                margin-right: 0;
+            }
+
+            .highlight-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+
+            .highlight-name {
+                font-size: 20px;
+            }
+
+            .highlight-date {
+                font-size: 14px;
+            }
+
+            .highlight-content {
+                font-size: 17px;
+                line-height: 1.7;
+            }
+
+            .highlight-method {
+                font-size: 14px;
+                padding: 8px 14px;
+            }
+
+            .highlight-extra {
+                font-size: 15px;
+                padding: 10px;
+            }
+
+            /* 今日文章區塊手機版 */
+            .highlight-article {
+                padding: 12px;
+            }
+
+            .article-label {
+                font-size: 14px;
+            }
+
+            .article-text-preview,
+            .article-text-full {
+                font-size: 15px;
+                line-height: 1.7;
+            }
+
+            .article-link-button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            /* 防止文字溢出 */
+            .highlight-content,
+            .highlight-extra,
+            .article-text-preview,
+            .article-text-full {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                hyphens: auto;
+            }
+
+            /* 文章內嵌連結手機版 */
+            .article-inline-link {
+                word-break: break-all;
+            }
+
+            /* 標題連結手機版 */
+            .section-header-with-link {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .header-link {
+                font-size: 13px;
+                padding: 6px 12px;
             }
 
             .checkin-cta-button {

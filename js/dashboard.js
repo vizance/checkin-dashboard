@@ -291,9 +291,28 @@ export function renderHeatmap() {
 
         // 定位 tooltip
         const rect = cell.getBoundingClientRect();
-        tooltip.style.left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + 'px';
-        tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + window.scrollY + 'px';
         tooltip.style.display = 'block';
+
+        // 計算 tooltip 寬度和位置
+        const tooltipWidth = tooltip.offsetWidth;
+        const viewportWidth = window.innerWidth;
+        const padding = 10; // 距離邊緣的最小距離
+
+        // 計算水平位置（置中但不超出螢幕）
+        let leftPos = rect.left + rect.width / 2 - tooltipWidth / 2;
+
+        // 防止超出左邊界
+        if (leftPos < padding) {
+            leftPos = padding;
+        }
+
+        // 防止超出右邊界
+        if (leftPos + tooltipWidth > viewportWidth - padding) {
+            leftPos = viewportWidth - tooltipWidth - padding;
+        }
+
+        tooltip.style.left = leftPos + 'px';
+        tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + window.scrollY + 'px';
     };
 
     const hideTooltip = () => {
@@ -1067,12 +1086,16 @@ window.toggleTeammatesSection = function() {
         if (leaderboardList && leaderboardList.classList.contains('loading')) {
             renderLeaderboard();
             renderHighlights();
-            syncSectionHeights();
         }
 
         content.style.display = 'block';
         icon.textContent = '▲';
         icon.classList.add('open');
+
+        // 延遲同步高度，確保 DOM 已經顯示並計算完成
+        requestAnimationFrame(() => {
+            syncSectionHeights();
+        });
     } else {
         content.style.display = 'none';
         icon.textContent = '▼';
@@ -1202,23 +1225,80 @@ function generatePersonalCalendar(studentHighlights, courseStartDate) {
     console.log('日曆生成完成，總共', calendarDays.filter(d => d.isChecked).length, '天已打卡');
     console.log('====================================================');
 
-    // 生成 HTML
+    // 生成 HTML（支援 RWD）
     let html = `
+        <style>
+            .personal-calendar-container .calendar-legend {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+                font-size: 15px;
+                font-weight: 700;
+                flex-wrap: wrap;
+            }
+            .personal-calendar-container .week-days {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 10px;
+            }
+            .personal-calendar-container .calendar-day-cell {
+                padding: 12px;
+                border-radius: 8px;
+                text-align: center;
+                min-height: 100px;
+                transition: all 0.2s ease;
+            }
+            @media (max-width: 768px) {
+                .personal-calendar-container .week-days {
+                    gap: 6px;
+                }
+                .personal-calendar-container .calendar-day-cell {
+                    padding: 8px 4px;
+                    min-height: 70px;
+                }
+                .personal-calendar-container .calendar-day-cell .day-name {
+                    font-size: 10px !important;
+                }
+                .personal-calendar-container .calendar-day-cell .check-mark {
+                    font-size: 28px !important;
+                }
+                .personal-calendar-container .calendar-day-cell .date-text {
+                    font-size: 9px !important;
+                }
+                .personal-calendar-container .calendar-legend {
+                    font-size: 13px;
+                    gap: 12px;
+                }
+                .personal-calendar-container .calendar-legend .legend-box {
+                    width: 18px !important;
+                    height: 18px !important;
+                }
+            }
+            @media (max-width: 480px) {
+                .personal-calendar-container .calendar-day-cell {
+                    padding: 6px 2px;
+                    min-height: 60px;
+                }
+                .personal-calendar-container .calendar-day-cell .check-mark {
+                    font-size: 22px !important;
+                }
+            }
+        </style>
         <div class="personal-calendar-container">
             <h3 style="margin-bottom: 20px; font-size: 24px; font-weight: 900; color: #2C3E50; border-bottom: 3px solid #2C3E50; padding-bottom: 10px;">
                 📅 我的 35 天打卡日曆
             </h3>
-            <div class="calendar-legend" style="display: flex; gap: 20px; margin-bottom: 20px; font-size: 15px; font-weight: 700;">
+            <div class="calendar-legend">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #FF6B35 0%, #FF8C52 100%); border: 3px solid #2C3E50; border-radius: 4px;"></div>
+                    <div class="legend-box" style="width: 24px; height: 24px; background: linear-gradient(135deg, #FF6B35 0%, #FF8C52 100%); border: 3px solid #2C3E50; border-radius: 4px;"></div>
                     <span>已打卡</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 24px; height: 24px; background: white; border: 3px solid #2C3E50; border-radius: 4px;"></div>
+                    <div class="legend-box" style="width: 24px; height: 24px; background: white; border: 3px solid #2C3E50; border-radius: 4px;"></div>
                     <span>未打卡</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 24px; height: 24px; background: #F0F0F0; border: 3px solid #DDD; border-radius: 4px;"></div>
+                    <div class="legend-box" style="width: 24px; height: 24px; background: #F0F0F0; border: 3px solid #DDD; border-radius: 4px;"></div>
                     <span>未來日期</span>
                 </div>
             </div>
@@ -1231,7 +1311,7 @@ function generatePersonalCalendar(studentHighlights, courseStartDate) {
         html += `
             <div class="calendar-week" style="margin-bottom: 25px;">
                 <div class="week-label" style="font-size: 18px; font-weight: 900; color: #666; margin-bottom: 12px;">第 ${week} 週</div>
-                <div class="week-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;">
+                <div class="week-days">
         `;
 
         weekDays.forEach(day => {
@@ -1243,29 +1323,29 @@ function generatePersonalCalendar(studentHighlights, courseStartDate) {
                 // 未來日期：灰色
                 boxStyle = 'background: #F0F0F0; border: 3px solid #DDD; color: #999;';
                 contentHTML = `
-                    <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">週${dayNames[day.dayOfWeek]}</div>
-                    <div style="font-size: 12px; font-weight: 700; margin-top: 4px; opacity: 0.5;">${day.displayDate}</div>
+                    <div class="day-name" style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">週${dayNames[day.dayOfWeek]}</div>
+                    <div class="date-text" style="font-size: 12px; font-weight: 700; margin-top: 4px; opacity: 0.5;">${day.displayDate}</div>
                 `;
             } else if (day.isChecked) {
                 // 已打卡：橘色漸層 + 超大白色勾勾
                 boxStyle = 'background: linear-gradient(135deg, #FF6B35 0%, #FF8C52 100%); border: 4px solid #2C3E50; color: white; box-shadow: 4px 4px 0px rgba(44, 62, 80, 0.4);';
                 contentHTML = `
-                    <div style="font-size: 12px; font-weight: 700; margin-bottom: 2px; opacity: 0.9;">週${dayNames[day.dayOfWeek]}</div>
-                    <div style="font-size: 48px; font-weight: 900; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.2);">✓</div>
-                    <div style="font-size: 11px; font-weight: 700; margin-top: 2px; opacity: 0.9;">${day.displayDate}</div>
+                    <div class="day-name" style="font-size: 12px; font-weight: 700; margin-bottom: 2px; opacity: 0.9;">週${dayNames[day.dayOfWeek]}</div>
+                    <div class="check-mark" style="font-size: 48px; font-weight: 900; line-height: 1; text-shadow: 2px 2px 0px rgba(0,0,0,0.2);">✓</div>
+                    <div class="date-text" style="font-size: 11px; font-weight: 700; margin-top: 2px; opacity: 0.9;">${day.displayDate}</div>
                 `;
             } else {
                 // 未打卡：白色空框
                 boxStyle = 'background: white; border: 3px solid #2C3E50; color: #2C3E50;';
                 contentHTML = `
-                    <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">週${dayNames[day.dayOfWeek]}</div>
-                    <div style="height: 48px;"></div>
-                    <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">${day.displayDate}</div>
+                    <div class="day-name" style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">週${dayNames[day.dayOfWeek]}</div>
+                    <div class="check-mark" style="height: 48px;"></div>
+                    <div class="date-text" style="font-size: 12px; font-weight: 700; margin-top: 4px;">${day.displayDate}</div>
                 `;
             }
 
             html += `
-                <div style="${boxStyle} padding: 12px; border-radius: 8px; text-align: center; position: relative; transition: all 0.2s ease; min-height: 100px;">
+                <div class="calendar-day-cell" style="${boxStyle}">
                     ${contentHTML}
                 </div>
             `;
@@ -1398,23 +1478,35 @@ export function lookupStudent() {
 export function syncSectionHeights() {
     const leaderboard = document.querySelector('.leaderboard');
     const highlights = document.querySelector('.highlights');
+    const teammatesContent = document.getElementById('teammatesContent');
 
-    if (leaderboard && highlights) {
-        // 1. 先清除 highlights 的高度設定，讓它自然長高
-        highlights.style.height = 'auto';
-        highlights.style.maxHeight = 'none';
-
-        // 2. 獲取排行榜的實際高度 (這是我們的基準)
-        const leaderboardHeight = leaderboard.offsetHeight;
-
-        // 3. 設定 highlights 的最大高度等於排行榜的高度
-        highlights.style.maxHeight = leaderboardHeight + 'px';
-
-        // 4. 設定 highlights 的高度也等於排行榜的高度，確保視覺一致
-        highlights.style.height = leaderboardHeight + 'px';
-
-        console.log(`同步高度: 排行榜 ${leaderboardHeight}px -> 亮點牆 (height & max-height set)`);
+    // 只有當區塊可見時才同步高度
+    if (!leaderboard || !highlights) return;
+    if (teammatesContent && teammatesContent.style.display === 'none') {
+        console.log('同步高度跳過：區塊未顯示');
+        return;
     }
+
+    // 1. 先清除 highlights 的高度設定，讓它自然長高
+    highlights.style.height = 'auto';
+    highlights.style.maxHeight = 'none';
+
+    // 2. 獲取排行榜的實際高度 (這是我們的基準)
+    const leaderboardHeight = leaderboard.offsetHeight;
+
+    // 如果高度為 0，表示區塊還沒有正確渲染
+    if (leaderboardHeight === 0) {
+        console.log('同步高度跳過：排行榜高度為 0');
+        return;
+    }
+
+    // 3. 設定 highlights 的最大高度等於排行榜的高度
+    highlights.style.maxHeight = leaderboardHeight + 'px';
+
+    // 4. 設定 highlights 的高度也等於排行榜的高度，確保視覺一致
+    highlights.style.height = leaderboardHeight + 'px';
+
+    console.log(`同步高度: 排行榜 ${leaderboardHeight}px -> 亮點牆 (height & max-height set)`);
 }
 
 // ============================================
