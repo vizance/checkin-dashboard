@@ -527,6 +527,188 @@
             font-size: 20px;
         }
 
+        /* ============================================
+           連續打卡旅程榜 - 等級制樣式
+           ============================================ */
+        .tier-group {
+            background: #FAFAFA;
+            border: 3px solid #2C3E50;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 15px;
+            box-shadow: 3px 3px 0px rgba(44, 62, 80, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .tier-group:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px rgba(44, 62, 80, 0.3);
+        }
+
+        .tier-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .tier-header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .tier-emoji {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .tier-name {
+            font-size: 20px;
+            font-weight: 900;
+            color: #2C3E50;
+        }
+
+        .tier-condition {
+            font-size: 14px;
+            font-weight: 700;
+            color: #888;
+        }
+
+        .tier-count {
+            font-size: 14px;
+            font-weight: 900;
+            color: white;
+            background: #FF6B35;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+
+        .tier-students {
+            font-size: 16px;
+            font-weight: 700;
+            color: #555;
+            line-height: 1.8;
+            padding-left: 40px;
+        }
+
+        .tier-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* 尚未達成的等級 - 灰色狀態 */
+        .tier-group.tier-empty-state {
+            background: #F5F5F5;
+            border-color: #DDD;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
+            opacity: 0.7;
+        }
+
+        .tier-group.tier-empty-state:hover {
+            transform: none;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .tier-group.tier-empty-state .tier-emoji {
+            filter: grayscale(100%);
+            opacity: 0.5;
+        }
+
+        .tier-group.tier-empty-state .tier-name {
+            color: #999;
+        }
+
+        .tier-group.tier-empty-state .tier-condition {
+            color: #BBB;
+        }
+
+        .tier-group.tier-empty-state .tier-count {
+            background: #CCC;
+        }
+
+        .tier-group.tier-empty-state .tier-students {
+            color: #BBB;
+            font-style: italic;
+        }
+
+        /* 等級制 RWD - 平板 */
+        @media (max-width: 768px) {
+            .tier-group {
+                padding: 14px 16px;
+                margin-bottom: 12px;
+            }
+
+            .tier-header {
+                gap: 6px;
+            }
+
+            .tier-emoji {
+                font-size: 24px;
+            }
+
+            .tier-name {
+                font-size: 18px;
+            }
+
+            .tier-condition {
+                font-size: 13px;
+            }
+
+            .tier-count {
+                font-size: 13px;
+                padding: 3px 8px;
+            }
+
+            .tier-students {
+                font-size: 15px;
+                padding-left: 32px;
+                line-height: 1.7;
+            }
+        }
+
+        /* 等級制 RWD - 手機 */
+        @media (max-width: 480px) {
+            .tier-group {
+                padding: 12px 14px;
+                margin-bottom: 10px;
+            }
+
+            .tier-header {
+                flex-wrap: wrap;
+            }
+
+            .tier-emoji {
+                font-size: 22px;
+            }
+
+            .tier-name {
+                font-size: 16px;
+            }
+
+            .tier-condition {
+                font-size: 12px;
+                order: 4;
+                width: 100%;
+                padding-left: 30px;
+                margin-top: -4px;
+            }
+
+            .tier-count {
+                font-size: 12px;
+                padding: 2px 8px;
+            }
+
+            .tier-students {
+                font-size: 14px;
+                padding-left: 30px;
+                line-height: 1.6;
+            }
+        }
+
         /* 亮點牆 - 手繪風格 */
         .highlights {
             background: white;

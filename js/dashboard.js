@@ -534,30 +534,82 @@ function startCooldown(button, seconds) {
 }
 
 // ============================================
-// 渲染最高連續打卡王排行榜
+// 渲染連續打卡旅程榜（等級制）
 // ============================================
+
+// 等級定義
+const JOURNEY_TIERS = [
+    { emoji: '🏆', name: '完美旅程', min: 35, max: 999, description: '連續 35 天' },
+    { emoji: '🏔️', name: '登峰在望', min: 28, max: 34, description: '連續 28-34 天' },
+    { emoji: '🧗', name: '穩健攀登', min: 21, max: 27, description: '連續 21-27 天' },
+    { emoji: '🥾', name: '步履不停', min: 14, max: 20, description: '連續 14-20 天' },
+    { emoji: '🚶', name: '踏上旅途', min: 7, max: 13, description: '連續 7-13 天' },
+    { emoji: '🎒', name: '整裝待發', min: 1, max: 6, description: '連續 1-6 天' }
+];
+
 export function renderLeaderboard() {
     const leaderboardList = document.getElementById('leaderboardList');
     leaderboardList.classList.remove('loading');
 
-    const sorted = [...statsData].sort((a, b) => parseInt(b[2]) - parseInt(a[2]));
-    const top10 = sorted.slice(0, 10);
+    // 將學員依等級分組
+    const tierGroups = JOURNEY_TIERS.map(tier => ({
+        ...tier,
+        students: []
+    }));
 
-    let html = '';
-    top10.forEach((student, index) => {
+    // 遍歷所有學員，分配到對應等級
+    statsData.forEach(student => {
         const name = student[0];
-        const consecutiveDays = student[2];
-        const milestones = getMilestones(student);
-        const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+        const consecutiveDays = parseInt(student[2]) || 0;
+
+        // 找到對應的等級
+        for (const tierGroup of tierGroups) {
+            if (consecutiveDays >= tierGroup.min && consecutiveDays <= tierGroup.max) {
+                tierGroup.students.push({ name, days: consecutiveDays });
+                break;
+            }
+        }
+    });
+
+    // 生成 HTML
+    let html = '';
+    const maxNamesToShow = 5; // 每個等級最多顯示幾個名字
+
+    tierGroups.forEach(tier => {
+        const isEmpty = tier.students.length === 0;
+
+        // 同等級內按姓名排序
+        if (!isEmpty) {
+            tier.students.sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
+        }
+
+        // 取得要顯示的名字
+        const displayNames = tier.students.slice(0, maxNamesToShow).map(s => s.name);
+        const remainingCount = tier.students.length - maxNamesToShow;
+
+        // 名字顯示
+        let namesHTML = '';
+        if (isEmpty) {
+            namesHTML = '尚無挑戰者';
+        } else {
+            namesHTML = displayNames.join('、');
+            if (remainingCount > 0) {
+                namesHTML += ` ... 等 ${tier.students.length} 人`;
+            }
+        }
+
+        // 人數顯示
+        const countHTML = isEmpty ? '-' : `${tier.students.length} 人`;
 
         html += `
-            <div class="leaderboard-item ${rankClass}">
-                <span class="rank">${index + 1}</span>
-                <div class="student-info">
-                    <div class="student-name">${name}</div>
-                    <div class="streak-days">🔥 ${consecutiveDays} 天</div>
-                    <div class="milestones">${milestones}</div>
+            <div class="tier-group ${isEmpty ? 'tier-empty-state' : ''}">
+                <div class="tier-header">
+                    <span class="tier-emoji">${tier.emoji}</span>
+                    <span class="tier-name">${tier.name}</span>
+                    <span class="tier-condition">${tier.description}</span>
+                    <span class="tier-count">${countHTML}</span>
                 </div>
+                <div class="tier-students">${namesHTML}</div>
             </div>
         `;
     });

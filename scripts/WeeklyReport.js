@@ -2,6 +2,15 @@
 // 每週里程碑報告功能
 // ============================================
 
+// ============================================
+// 日期設定
+// ============================================
+// 注意：TEST_TODAY_DATE 已在 Code_CLEAN.js 中定義，請在那邊修改
+// 課程開始日期（此處獨立定義，因為 Code_CLEAN.js 沒有這個變數）
+const COURSE_START_DATE = new Date('2026-01-01');
+
+// ============================================
+
 /**
  * 產生本週報告預覽
  * 顯示所有學員的報告摘要，供管理員檢查
@@ -39,7 +48,7 @@ function generateWeeklyReportPreview() {
   summary += `前 5 名學員：\n`;
 
   weeklyData.students.slice(0, 5).forEach((student, index) => {
-    summary += `${index + 1}. ${student.name} - 本週${student.weekCheckins}/7天, 連續${student.consecutive}天\n`;
+    summary += `${index + 1}. ${student.name} - 本週${student.weekCheckins}/7天, 最高連續${student.consecutive}天\n`;
   });
 
   summary += `\n✅ 預覽完成！\n請到「📊 每週報告」>「✅ 確認寄送本週報告」進行寄送。`;
@@ -203,8 +212,7 @@ function calculateWeeklyStats() {
   Logger.log('今天是星期' + (dayOfWeek === 0 ? '日' : dayOfWeek) + '，距離週一：' + daysFromMonday + '天');
 
   // 計算是第幾週（從課程開始日期算起）
-  const courseStart = new Date('2025-12-07'); // TODO: 從 config 讀取
-  const weeksSinceCourseStart = Math.floor((weekStart - courseStart) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  const weeksSinceCourseStart = Math.floor((weekStart - COURSE_START_DATE) / (7 * 24 * 60 * 60 * 1000)) + 1;
 
   // 讀取所有資料
   const responseData = responseSheet.getDataRange().getValues();
@@ -469,9 +477,9 @@ function generateWeeklyReportHTML(student, weeklyData) {
             <td style="width: 4%;"></td>
             <td style="width: 48%; padding: 0;">
               <div style="background: white; padding: 22px; border: 4px solid #2C3E50; border-radius: 8px; box-shadow: 4px 4px 0px #2C3E50; text-align: center;">
-                <div style="font-size: 14px; color: #666; font-weight: 700; margin-bottom: 8px;">🏆 最高連續</div>
+                <div style="font-size: 14px; color: #666; font-weight: 700; margin-bottom: 8px;">🏆 最高連續打卡</div>
                 <div style="font-size: 38px; font-weight: 900; color: #FF6B35; text-shadow: 2px 2px 0px rgba(0,0,0,0.1);">${student.consecutive}<span style="font-size: 20px; color: #999; font-weight: 700;"> 天</span></div>
-                <div style="font-size: 14px; color: #888; font-weight: 700; margin-top: 6px;">排名：${student.rank}/${weeklyData.totalStudents}</div>
+                <div style="font-size: 14px; color: #888; font-weight: 700; margin-top: 6px;">歷史最佳紀錄</div>
               </div>
             </td>
           </tr>
@@ -534,7 +542,6 @@ function generateWeeklyReportHTML(student, weeklyData) {
  * @return {string} 日曆 HTML
  */
 function generateCalendarHTML(checkinDates) {
-  const courseStart = new Date('2025-12-07'); // TODO: 從 config 讀取
   const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
 
   let calendarHTML = '<div style="background: white; padding: 20px; border: 4px solid #2C3E50; border-radius: 8px; box-shadow: 4px 4px 0px #2C3E50;">';
@@ -550,8 +557,8 @@ function generateCalendarHTML(checkinDates) {
     // 生成 7 天
     for (let day = 0; day < 7; day++) {
       const dayIndex = week * 7 + day;
-      const currentDate = new Date(courseStart);
-      currentDate.setDate(courseStart.getDate() + dayIndex);
+      const currentDate = new Date(COURSE_START_DATE);
+      currentDate.setDate(COURSE_START_DATE.getDate() + dayIndex);
 
       const dateStr = formatDate(currentDate);
       const isChecked = checkinDates.has(dateStr);
