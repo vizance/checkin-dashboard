@@ -33,9 +33,10 @@
 
         <!-- 情境資訊列（整合時間、夥伴數、系統資訊） -->
         <div class="context-info-bar">
-            <div class="info-item">
-                <span class="info-icon"> 🗓️</span>
-                <span id="currentDateTime"> 現在時間： <strong id="currentDateTimeValue">YYYY/MM/DD HH:MM</strong> </span>
+            <div class="info-item countdown-container">
+                <span class="info-icon"> ⏰</span>
+                <span class="countdown-label">今日打卡倒數</span>
+                <span class="countdown-timer" id="countdownTimer">--:--:--</span>
             </div>
             <span class="info-divider">｜</span>
             <div class="info-item">

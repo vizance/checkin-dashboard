@@ -159,6 +159,49 @@
             color: #FF6B35;
         }
 
+        /* 倒數計時器樣式 */
+        .countdown-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid #1a252f;
+        }
+
+        .countdown-label {
+            color: #FFF;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .countdown-timer {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: 900;
+            color: #FFD93D;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 倒數緊急狀態（剩餘不到 2 小時） */
+        .countdown-timer.countdown-urgent {
+            color: #FF6B6B;
+            animation: urgentPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes urgentPulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
         /* 統計卡片 - 手繪風格 */
         .stats-banner {
             display: block;
@@ -2115,6 +2158,22 @@
 
             .info-item {
                 text-align: center;
+            }
+
+            /* 倒數計時器手機版 */
+            .countdown-container {
+                padding: 10px 14px;
+                gap: 8px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .countdown-label {
+                font-size: 13px;
+            }
+
+            .countdown-timer {
+                font-size: 22px;
             }
 
             .stats-banner {

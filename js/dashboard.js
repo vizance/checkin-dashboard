@@ -47,22 +47,45 @@ export function renderStatsBanner() {
 }
 
 /**
- * 更新目前日期時間
+ * 更新今日打卡倒數計時器
+ * 計算距離今天午夜 12 點的剩餘時間
+ * 使用瀏覽器本地時區
  */
 export function updateDateTime() {
+    updateCountdown();
+    // 每秒更新一次倒數
+    setInterval(updateCountdown, 1000);
+}
+
+function updateCountdown() {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
 
-    const timeString = `${year}/${month}/${day} ${hours}:${minutes}`;
+    // 計算今天午夜 (明天 00:00:00)
+    const midnight = new Date(now);
+    midnight.setDate(midnight.getDate() + 1);
+    midnight.setHours(0, 0, 0, 0);
 
-    // 更新到內層的 strong 元素（使用者修改了 HTML 結構）
-    const element = document.getElementById('currentDateTimeValue');
+    // 計算剩餘毫秒數
+    const remainingMs = midnight - now;
+
+    // 轉換為時、分、秒
+    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+
+    // 格式化顯示
+    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    const element = document.getElementById('countdownTimer');
     if (element) {
         element.textContent = timeString;
+
+        // 根據剩餘時間調整樣式（最後 2 小時變紅色提醒）
+        if (hours < 2) {
+            element.classList.add('countdown-urgent');
+        } else {
+            element.classList.remove('countdown-urgent');
+        }
     }
 }
 
