@@ -849,12 +849,19 @@ export function renderLeaderboard() {
 }
 
 function getMilestones(student) {
-    let badges = '';
-    if (student[4] === '🏆') badges += '🏆';
-    if (student[5] === '🏆') badges += '🏆';
-    if (student[6] === '🏆') badges += '🏆';
-    if (student[7] === '🏆') badges += '🏆';
-    return badges || '-';
+    const milestones = [
+        { col: 4, days: 7, icon: '🥉' },
+        { col: 5, days: 14, icon: '🥈' },
+        { col: 6, days: 21, icon: '🥇' },
+        { col: 7, days: 35, icon: '🏆' }
+    ];
+
+    const achieved = milestones
+        .filter(m => student[m.col] === '🏆')
+        .map(m => `${m.icon}${m.days}天`)
+        .join(' ');
+
+    return achieved ? `🎖️ 連續打卡里程碑 ${achieved}` : '🎖️ 連續打卡里程碑 尚未解鎖';
 }
 
 // ============================================
