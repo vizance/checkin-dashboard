@@ -19,6 +19,21 @@ import {
 // 前端計算連續打卡天數（即時計算，不依賴後端）
 // ============================================
 
+/**
+ * 檢查打卡狀態是否為「已完成」
+ * 支援多種格式：「✅ 是，已完成」、「Yes！我已完成」等
+ * @param {string} status - 狀態值
+ * @returns {boolean} 是否已完成
+ */
+function isCheckinCompleted(status) {
+    if (!status) return false;
+    const s = status.toLowerCase();
+    // 支援：「是」+「完成」、「yes」+「完成」、或包含 ✅
+    return (s.includes('是') && s.includes('完成')) ||
+           (s.includes('yes') && s.includes('完成')) ||
+           s.includes('✅');
+}
+
 // 快取計算結果
 let calculatedConsecutiveDays = new Map();
 
@@ -38,8 +53,8 @@ export function calculateAllConsecutiveDays() {
         const dateValue = highlight[3]; // D: 打卡日期
         const status = highlight[4];    // E: 是否完成
 
-        // 只計算「已完成」的記錄
-        if (status !== '✅ 是，已完成') return;
+        // 只計算「已完成」的記錄（支援多種格式）
+        if (!isCheckinCompleted(status)) return;
         if (!name || !dateValue) return;
 
         if (!studentRecords.has(name)) {
@@ -245,6 +260,9 @@ function getTodayCheckedStudents() {
 
         if (!highlight[3] || !highlight[2]) return;
 
+        // 只計算「已完成」的記錄（支援多種格式）
+        if (!isCheckinCompleted(highlight[4])) return;
+
         const originalDateStr = highlight[3];  // D: 打卡日期
         const studentName = highlight[2];      // C: 姓名
 
@@ -318,9 +336,8 @@ function getCheckinRateForDate(date) {
         // highlight[4] = E: 是否完成
         if (!highlight[3] || !highlight[4]) return;
 
-        // 只統計「✅ 是，已完成」的記錄
-        const isCompleted = highlight[4];
-        if (isCompleted !== "✅ 是，已完成") return;
+        // 只統計「已完成」的記錄（支援多種格式）
+        if (!isCheckinCompleted(highlight[4])) return;
 
         // 處理 Google Sheets 的日期時間格式
         const dateOnly = highlight[3].trim().split(' ')[0];
@@ -1324,7 +1341,7 @@ function generatePersonalCalendar(studentHighlights, courseStartDate) {
     console.log('==================== 生成個人日曆 ====================');
     console.log('學員打卡記錄總數:', studentHighlights.length);
 
-    // 提取已打卡的日期（只計算「✅ 是，已完成」的記錄）
+    // 提取已打卡的日期（支援多種「已完成」格式）
     const checkedDates = new Set();
     const parsedDates = []; // 用於 debug
 
@@ -1341,7 +1358,7 @@ function generatePersonalCalendar(studentHighlights, courseStartDate) {
             });
         }
 
-        if (isCompleted === "✅ 是，已完成") {
+        if (isCheckinCompleted(isCompleted)) {
             let date;
             let parseMethod = '';
 
