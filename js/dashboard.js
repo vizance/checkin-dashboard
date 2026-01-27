@@ -4,13 +4,15 @@
  */
 
 import {
-    TEST_TODAY_DATE,
     COURSE_START_DATE,
+    TEST_TODAY_DATE,
     SHEET_ID,
     STATS_GID,
     HIGHLIGHTS_GID,
     statsData,
-    highlightsData
+    highlightsData,
+    getTaiwanToday,
+    getTaiwanNow
 } from './config.js';
 
 // ============================================
@@ -58,9 +60,10 @@ export function updateDateTime() {
 }
 
 function updateCountdown() {
-    const now = new Date();
+    // 使用台灣時區計算
+    const now = getTaiwanNow();
 
-    // 計算今天午夜 (明天 00:00:00)
+    // 計算台灣時區的今天午夜 (明天 00:00:00)
     const midnight = new Date(now);
     midnight.setDate(midnight.getDate() + 1);
     midnight.setHours(0, 0, 0, 0);
@@ -91,7 +94,7 @@ function updateCountdown() {
 
 function getTodayCheckedStudents() {
     // 使用測試日期或真實日期
-    const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
+    const today = getTaiwanToday();
     today.setHours(0, 0, 0, 0);
 
     console.log('=== 今日打卡檢查開始 ===');
@@ -236,7 +239,7 @@ export function renderHeatmap() {
     const heatmapGrid = document.getElementById('heatmapGrid');
     const tooltip = document.getElementById('heatmapTooltip');
 
-    const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
+    const today = getTaiwanToday();
     today.setHours(0, 0, 0, 0);
 
     // 更新挑戰進度資訊
@@ -717,7 +720,7 @@ export function renderHighlights() {
     highlightsList.classList.remove('loading');
 
     // 取得今天的日期（不含時間）
-    const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
+    const today = getTaiwanToday();
     today.setHours(0, 0, 0, 0);
 
     // 過濾出今天的亮點
@@ -1262,7 +1265,7 @@ function generatePersonalCalendar(studentHighlights, courseStartDate) {
     // 生成 35 天的日期陣列
     const calendarDays = [];
     const startDate = new Date(courseStartDate);
-    const today = TEST_TODAY_DATE ? new Date(TEST_TODAY_DATE) : new Date();
+    const today = getTaiwanToday();
     today.setHours(0, 0, 0, 0);
 
     console.log('課程開始日期:', startDate.toLocaleDateString());
