@@ -16,6 +16,137 @@ import {
 } from './config.js';
 
 // ============================================
+// 前端計算連續打卡天數（即時計算，不依賴後端）
+// ============================================
+
+// 快取計算結果
+let calculatedConsecutiveDays = new Map();
+
+/**
+ * 從 highlightsData 計算所有學員的最高連續打卡天數
+ * 邏輯與後端 Google Apps Script 一致
+ */
+export function calculateAllConsecutiveDays() {
+    console.log('=== 前端計算連續打卡天數開始 ===');
+
+    const studentRecords = new Map();
+    const today = getTaiwanToday();
+
+    // 遍歷所有打卡記錄，建立每位學員的打卡日期 Set
+    highlightsData.forEach(highlight => {
+        const name = highlight[2];      // C: 姓名
+        const dateValue = highlight[3]; // D: 打卡日期
+        const status = highlight[4];    // E: 是否完成
+
+        // 只計算「已完成」的記錄
+        if (status !== '✅ 是，已完成') return;
+        if (!name || !dateValue) return;
+
+        if (!studentRecords.has(name)) {
+            studentRecords.set(name, new Set());
+        }
+
+        // 將日期標準化為 YYYY-MM-DD 字串
+        let normalizedDate = null;
+        let dateObj = null;
+
+        if (dateValue instanceof Date) {
+            dateObj = new Date(dateValue);
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            normalizedDate = `${year}-${month}-${day}`;
+        } else if (typeof dateValue === 'string') {
+            // 處理 "2026/1/27" 或 "2026/1/27 下午 9:52:45" 格式
+            const datePart = dateValue.trim().split(' ')[0];
+            const parts = datePart.split('/');
+
+            if (parts.length === 3) {
+                const year = parts[0];
+                const month = parts[1].padStart(2, '0');
+                const day = parts[2].padStart(2, '0');
+                normalizedDate = `${year}-${month}-${day}`;
+                dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            }
+        }
+
+        // 只計算今天或之前的打卡記錄
+        if (normalizedDate && dateObj && dateObj <= today) {
+            studentRecords.get(name).add(normalizedDate);
+        }
+    });
+
+    // 計算每位學員的最高連續打卡天數
+    calculatedConsecutiveDays.clear();
+
+    studentRecords.forEach((dateSet, studentName) => {
+        let maxConsecutiveDays = 0;
+
+        if (dateSet.size > 0) {
+            // 將日期字串轉換為 Date 物件並排序（從舊到新）
+            const sortedDates = Array.from(dateSet)
+                .map(dateStr => {
+                    const parts = dateStr.split('-');
+                    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                })
+                .sort((a, b) => a - b);
+
+            // 計算最高連續打卡天數
+            maxConsecutiveDays = 1;
+            let currentConsecutive = 1;
+
+            for (let i = 1; i < sortedDates.length; i++) {
+                const currentDate = new Date(sortedDates[i]);
+                currentDate.setHours(0, 0, 0, 0);
+
+                const previousDate = new Date(sortedDates[i - 1]);
+                previousDate.setHours(0, 0, 0, 0);
+
+                const diff = Math.floor((currentDate - previousDate) / (1000 * 60 * 60 * 24));
+
+                if (diff === 1) {
+                    currentConsecutive++;
+                    maxConsecutiveDays = Math.max(maxConsecutiveDays, currentConsecutive);
+                } else {
+                    currentConsecutive = 1;
+                }
+            }
+        }
+
+        calculatedConsecutiveDays.set(studentName, maxConsecutiveDays);
+    });
+
+    console.log(`前端計算完成：${calculatedConsecutiveDays.size} 位學員`);
+    console.log('=== 前端計算連續打卡天數結束 ===');
+
+    return calculatedConsecutiveDays;
+}
+
+/**
+ * 取得指定學員的連續打卡天數（優先使用前端計算結果）
+ * @param {string} studentName 學員姓名
+ * @returns {number} 連續打卡天數
+ */
+export function getConsecutiveDays(studentName) {
+    // 如果還沒計算過，先計算
+    if (calculatedConsecutiveDays.size === 0) {
+        calculateAllConsecutiveDays();
+    }
+    return calculatedConsecutiveDays.get(studentName) || 0;
+}
+
+/**
+ * 取得所有學員的連續打卡天數 Map
+ * @returns {Map} studentName -> consecutiveDays
+ */
+export function getAllConsecutiveDays() {
+    if (calculatedConsecutiveDays.size === 0) {
+        calculateAllConsecutiveDays();
+    }
+    return calculatedConsecutiveDays;
+}
+
+// ============================================
 // 渲染整體進度看板
 // ============================================
 export function renderStatsBanner() {
@@ -577,6 +708,9 @@ export function renderLeaderboard() {
     const leaderboardList = document.getElementById('leaderboardList');
     leaderboardList.classList.remove('loading');
 
+    // 【前端即時計算】重新計算所有學員的連續打卡天數
+    calculateAllConsecutiveDays();
+
     // 將學員依等級分組
     const tierGroups = JOURNEY_TIERS.map(tier => ({
         ...tier,
@@ -586,7 +720,8 @@ export function renderLeaderboard() {
     // 遍歷所有學員，分配到對應等級
     statsData.forEach(student => {
         const name = student[0];
-        const consecutiveDays = parseInt(student[2]) || 0;
+        // 【改用前端計算結果】
+        const consecutiveDays = getConsecutiveDays(name);
 
         // 找到對應的等級
         for (const tierGroup of tierGroups) {
@@ -894,7 +1029,8 @@ window.updatePersonalOverview = function() {
     }
 
     const totalDays = student[1] || 0;
-    const consecutiveDays = student[2] || 0;
+    // 【改用前端計算結果】
+    const consecutiveDays = getConsecutiveDays(studentName);
     const milestones = getMilestones(student) || '-';
 
     // 更新統計數據
@@ -902,7 +1038,7 @@ window.updatePersonalOverview = function() {
     document.getElementById('overviewConsecutiveDays').textContent = consecutiveDays;
     document.getElementById('overviewMilestones').textContent = milestones;
 
-    console.log(`個人快覽已更新：${studentName} - 累計 ${totalDays} 天，連續 ${consecutiveDays} 天`);
+    console.log(`個人快覽已更新：${studentName} - 累計 ${totalDays} 天，連續 ${consecutiveDays} 天（前端計算）`);
 
     // 【修復】如果日曆已經展開，自動重新生成日曆內容
     const calendarContainer = document.getElementById('personalCalendarContainer');
@@ -1466,7 +1602,8 @@ export function lookupStudent() {
     }
 
     const totalDays = student[1];
-    const consecutiveDays = student[2];
+    // 【改用前端計算結果】
+    const consecutiveDays = getConsecutiveDays(studentName);
     const lastDate = student[3];
     const milestones = getMilestones(student);
 

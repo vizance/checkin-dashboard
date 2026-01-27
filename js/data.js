@@ -21,7 +21,8 @@ import {
     renderLeaderboard,
     renderHighlights,
     populateStudentSelect,
-    syncSectionHeights
+    syncSectionHeights,
+    calculateAllConsecutiveDays
 } from './dashboard.js';
 
 /**
@@ -74,6 +75,9 @@ export async function loadData(useCache = true) {
                 setStatsData(cachedStats);
                 setHighlightsData(cachedHighlights);
 
+                // 【前端即時計算】重新計算連續打卡天數
+                calculateAllConsecutiveDays();
+
                 renderStatsBanner();
                 renderHeatmap();
                 renderTodayCheckinStatus();
@@ -104,6 +108,9 @@ export async function loadData(useCache = true) {
         // 儲存到緩存
         setCachedData(CACHE_KEY_STATS, newStatsData);
         setCachedData(CACHE_KEY_HIGHLIGHTS, newHighlightsData);
+
+        // 【前端即時計算】重新計算連續打卡天數
+        calculateAllConsecutiveDays();
 
         renderStatsBanner();
         renderHeatmap();
