@@ -2991,6 +2991,36 @@
     font-weight: 700;
 }
 
+/* 簡短摘要列 */
+.overview-summary-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    background: #F8F9FA;
+    border: 2px solid #E9ECEF;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #495057;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.summary-item strong {
+    color: #FF6B35;
+    font-size: 18px;
+}
+
+.summary-separator {
+    color: #CCC;
+}
+
 .view-detail-button {
     width: 100%;
     padding: 14px;
@@ -3135,6 +3165,22 @@
 @media (max-width: 768px) {
     .overview-stats {
         grid-template-columns: 1fr;
+    }
+
+    .overview-summary-line {
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 14px;
+        padding: 12px 15px;
+    }
+
+    .summary-separator {
+        display: none;
+    }
+
+    .summary-item {
+        flex: 1 1 auto;
+        justify-content: center;
     }
 
     .toggle-title {

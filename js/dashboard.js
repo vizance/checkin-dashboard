@@ -1068,8 +1068,14 @@ export function populateStudentSelect() {
 window.updatePersonalOverview = function() {
     const select = document.getElementById('overviewStudentSelect');
     const studentName = select.value;
+    const afterSelectDiv = document.getElementById('overviewAfterSelect');
 
     if (!studentName) {
+        // 隱藏選擇後顯示的區域
+        if (afterSelectDiv) {
+            afterSelectDiv.style.display = 'none';
+        }
+
         // 清空數據
         document.getElementById('overviewTotalDays').textContent = '-';
         document.getElementById('overviewConsecutiveDays').textContent = '-';
@@ -1107,6 +1113,11 @@ window.updatePersonalOverview = function() {
     document.getElementById('overviewTotalDays').textContent = totalDays;
     document.getElementById('overviewConsecutiveDays').textContent = consecutiveDays;
     document.getElementById('overviewMilestones').textContent = milestones;
+
+    // 顯示選擇後的區域
+    if (afterSelectDiv) {
+        afterSelectDiv.style.display = 'block';
+    }
 
     console.log(`個人快覽已更新：${studentName} - 累計 ${totalDays} 天，連續 ${consecutiveDays} 天（前端計算）`);
 
