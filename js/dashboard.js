@@ -620,6 +620,59 @@ export function toggleStudentList() {
 }
 
 // ============================================
+// 全域刷新按鈕（頂部資訊列）
+// ============================================
+let globalRefreshCooldown = false;
+
+window.globalRefreshData = async function() {
+    const { loadData } = await import('./data.js');
+    const button = document.getElementById('globalRefreshBtn');
+    const textSpan = button.querySelector('.refresh-text');
+
+    // 如果正在冷卻中，不執行
+    if (globalRefreshCooldown) {
+        return;
+    }
+
+    // 開始冷卻
+    globalRefreshCooldown = true;
+    button.disabled = true;
+    button.classList.add('refreshing');
+
+    try {
+        textSpan.textContent = '刷新中...';
+
+        // 強制從遠端載入（跳過快取）
+        await loadData(false);
+
+        // 顯示完成狀態
+        textSpan.textContent = '已更新！';
+        button.classList.remove('refreshing');
+        button.classList.add('success');
+
+        // 3 秒後恢復
+        setTimeout(() => {
+            button.classList.remove('success');
+            textSpan.textContent = '手動刷新';
+            button.disabled = false;
+            globalRefreshCooldown = false;
+        }, 3000);
+
+    } catch (error) {
+        console.error('刷新失敗:', error);
+        textSpan.textContent = '刷新失敗';
+        button.classList.remove('refreshing');
+
+        // 3 秒後恢復
+        setTimeout(() => {
+            textSpan.textContent = '手動刷新';
+            button.disabled = false;
+            globalRefreshCooldown = false;
+        }, 3000);
+    }
+};
+
+// ============================================
 // 立即刷新今日打卡狀態（改善版：防濫用機制）
 // ============================================
 let refreshCooldown = false;
