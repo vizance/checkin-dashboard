@@ -202,6 +202,12 @@
             }
         }
 
+        .countdown-timezone {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-left: 4px;
+        }
+
         /* 統計卡片 - 手繪風格 */
         .stats-banner {
             display: block;
