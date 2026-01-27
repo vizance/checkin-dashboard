@@ -19,7 +19,7 @@
         <!-- 頂部標題 -->
         <div class="header">
             <h1> 🔥 5 週復盤習慣養成挑戰營  </h1>
-            <p>35 天養成習慣，我們一起見證彼此的成長！</p>
+            <p>35 天養成習慣，我們一起見證彼此的成長！<span class="header-partner-count">👥 <strong id="totalStudents">-</strong> 位夥伴同行</span></p>
         </div>
 
         <!-- 每日打卡 CTA - 最重要的行動呼籲 -->
@@ -31,25 +31,16 @@
             </a>
         </div>
 
-        <!-- 情境資訊列（整合時間、夥伴數、系統資訊） -->
-        <div class="context-info-bar">
-            <div class="info-item countdown-container">
-                <span class="info-icon"> ⏰ </span>
-                <span class="countdown-label"> 今日打卡倒數 </span>
-                <span class="countdown-timer" id="countdownTimer">--:--:--</span>
-                <span class="countdown-timezone">UTC+8</span>
-            </div>
-            <span class="info-divider">｜</span>
-            <div class="info-item">
-                <span class="info-icon"> 👥 </span>
-                <span> 挑戰夥伴：<strong id="totalStudents">-</strong> 人 </span>
-            </div>
-            <span class="info-divider">｜</span>
-            <div class="info-item">
-                <span class="info-icon"> ⏰ </span>
-                <span> 自動更新：<strong>08:00</strong> / <strong>14:00</strong> / <strong>23:00</strong></span>
-            </div>
-            <span class="info-divider">｜</span>
+        <!-- 今日打卡倒數 - 獨立醒目區塊 -->
+        <div class="countdown-standalone">
+            <div class="countdown-label-large">⏰ 今日打卡倒數</div>
+            <div class="countdown-timer-large" id="countdownTimer">--:--:--</div>
+            <div class="countdown-timezone-large">UTC+8 台灣時間</div>
+        </div>
+
+        <!-- 資料更新資訊列 -->
+        <div class="update-info-bar">
+            <span class="update-info-text">📊 打卡資料自動更新：<strong>08:00</strong> / <strong>14:00</strong> / <strong>23:00</strong></span>
             <button class="global-refresh-button" id="globalRefreshBtn" onclick="globalRefreshData()">
                 <span class="refresh-icon">🔄</span>
                 <span class="refresh-text">手動刷新</span>
