@@ -2401,12 +2401,8 @@
             }
 
             .pill-refresh-button {
-                padding: 4px 10px;
-                font-size: 11px;
-            }
-
-            .pill-refresh-button .refresh-text {
-                display: none;
+                padding: 6px 12px;
+                font-size: 12px;
             }
 
             /* 刷新提示手機版 */
