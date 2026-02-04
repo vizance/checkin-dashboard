@@ -29,11 +29,17 @@ window.onload = function() {
     setupSheetLinks(); // 設定 Google Sheet 連結
     loadData(true); // 首次載入使用緩存
 
-    // 每 1 分鐘自動刷新今日打卡狀態（更即時）
-    setInterval(() => {
-        console.log(' 自動刷新今日打卡狀態 ...');
-        loadData(false); // 不使用緩存，直接從遠端載入
-    }, 60 * 1000); // 1 分鐘
+    // 每 10 分鐘自動刷新資料
+    setInterval(async () => {
+        console.log('⏰ 自動刷新資料...');
+        await loadData(false);
+
+        // 如果有選中學員，同步更新個人快覽
+        const select = document.getElementById('overviewStudentSelect');
+        if (select && select.value && window.updatePersonalOverview) {
+            window.updatePersonalOverview();
+        }
+    }, 10 * 60 * 1000); // 10 分鐘
 };
 
 // 將必要的函數暴露給全局，供 HTML 的 onclick 使用

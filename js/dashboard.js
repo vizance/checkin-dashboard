@@ -36,6 +36,7 @@ function isCheckinCompleted(status) {
 
 // 快取計算結果
 let calculatedConsecutiveDays = new Map();
+let calculatedTotalDays = new Map();
 
 /**
  * 從 highlightsData 計算所有學員的最高連續打卡天數
@@ -85,14 +86,15 @@ export function calculateAllConsecutiveDays() {
             }
         }
 
-        // 只計算今天或之前的打卡記錄
-        if (normalizedDate && dateObj && dateObj <= today) {
+        // 只計算課程開始日之後、今天或之前的打卡記錄
+        if (normalizedDate && dateObj && dateObj >= COURSE_START_DATE && dateObj <= today) {
             studentRecords.get(name).add(normalizedDate);
         }
     });
 
-    // 計算每位學員的最高連續打卡天數
+    // 計算每位學員的累計打卡天數與最高連續打卡天數
     calculatedConsecutiveDays.clear();
+    calculatedTotalDays.clear();
 
     studentRecords.forEach((dateSet, studentName) => {
         let maxConsecutiveDays = 0;
@@ -129,6 +131,7 @@ export function calculateAllConsecutiveDays() {
         }
 
         calculatedConsecutiveDays.set(studentName, maxConsecutiveDays);
+        calculatedTotalDays.set(studentName, dateSet.size);
     });
 
     console.log(`前端計算完成：${calculatedConsecutiveDays.size} 位學員`);
@@ -148,6 +151,18 @@ export function getConsecutiveDays(studentName) {
         calculateAllConsecutiveDays();
     }
     return calculatedConsecutiveDays.get(studentName) || 0;
+}
+
+/**
+ * 取得指定學員的累計打卡天數（前端計算，只計算課程期間）
+ * @param {string} studentName 學員姓名
+ * @returns {number} 累計打卡天數
+ */
+export function getTotalDays(studentName) {
+    if (calculatedTotalDays.size === 0) {
+        calculateAllConsecutiveDays();
+    }
+    return calculatedTotalDays.get(studentName) || 0;
 }
 
 /**
@@ -645,6 +660,12 @@ window.globalRefreshData = async function() {
         // 強制從遠端載入（跳過快取）
         await loadData(false);
 
+        // 如果目前有選中學員，重新渲染個人快覽
+        const select = document.getElementById('overviewStudentSelect');
+        if (select && select.value) {
+            updatePersonalOverview();
+        }
+
         // 顯示完成狀態
         textSpan.textContent = '已更新！';
         button.classList.remove('refreshing');
@@ -1111,8 +1132,8 @@ window.updatePersonalOverview = function() {
         return;
     }
 
-    const totalDays = student[1] || 0;
-    // 【改用前端計算結果】
+    // 【前端計算】累計天數與連續天數，只計算課程期間的資料
+    const totalDays = getTotalDays(studentName);
     const consecutiveDays = getConsecutiveDays(studentName);
     const milestones = getMilestones(student) || '-';
 
@@ -1689,8 +1710,8 @@ export function lookupStudent() {
         return;
     }
 
-    const totalDays = student[1];
-    // 【改用前端計算結果】
+    // 【前端計算】累計天數與連續天數，只計算課程期間的資料
+    const totalDays = getTotalDays(studentName);
     const consecutiveDays = getConsecutiveDays(studentName);
     const lastDate = student[3];
     const milestones = getMilestones(student);
