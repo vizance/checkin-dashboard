@@ -89,11 +89,13 @@ export async function loadData(useCache = true) {
             }
         }
 
-        // 從遠端載入資料
+        // 從遠端載入資料（不使用快取時，加上 cache-busting 避免瀏覽器 HTTP 快取）
         console.log('從 Google Sheets 載入資料...');
+        const fetchOptions = useCache ? {} : { cache: 'no-store' };
+        const cacheBuster = useCache ? '' : `&_t=${Date.now()}`;
         const [statsResponse, highlightsResponse] = await Promise.all([
-            fetch(STATS_CSV_URL),
-            fetch(HIGHLIGHTS_CSV_URL)
+            fetch(STATS_CSV_URL + cacheBuster, fetchOptions),
+            fetch(HIGHLIGHTS_CSV_URL + cacheBuster, fetchOptions)
         ]);
 
         const statsCSV = await statsResponse.text();

@@ -13,7 +13,8 @@ export const STATS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}
 export const HIGHLIGHTS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${HIGHLIGHTS_GID}`;
 
 // 課程日期配置（以台灣時區 UTC+8 為準）
-export const COURSE_START_DATE = new Date('2026-01-27T00:00:00+08:00');
+// 活動期間：2026/03/02 - 2026/04/07（共 35 天 + 2 天緩衝）
+export const COURSE_START_DATE = new Date('2026-03-02T00:00:00+08:00');
 
 // 正式模式：使用真實日期
 // 注意：如果你有歷史測試資料需要查看，可以設定為特定日期來「時間旅行」
