@@ -1,150 +1,132 @@
+// prettier-ignore-start
 /**
- * 五週復盤習慣養成挑戰營 - HTML 報告生成器
+ * 五週復盤習慣養成挑戰營 - 結業證書 HTML 生成器
  *
  * 使用方式：
  * 1. 在 Google Sheets 中開啟「擴充功能」>「Apps Script」
  * 2. 將此程式碼貼入
- * 3. 執行 generateAllReports() 函數
- * 4. HTML 檔案會存到 Google Drive 的「復盤挑戰營報告」資料夾
- * 5. 在瀏覽器開啟 HTML 檔案 → 列印 → 存成 PDF
+ * 3. 執行 generateAllReports() 或 generateTestReport()
+ * 4. HTML 檔案會存到 Google Drive 指定資料夾
+ * 5. 在瀏覽器開啟 HTML 後截圖保存
  */
 
+/* eslint-disable */
+
 // ========== 配置區 ==========
-const CONFIG = {
-  // 活動日期
+var CONFIG = {
   COURSE_START_DATE: new Date('2026-03-02'),
   COURSE_END_DATE: new Date('2026-04-07'),
-
-  // 工作表名稱
-  STATS_SHEET_NAME: '打卡統計',      // 學員打卡統計資料
-  HIGHLIGHTS_SHEET_NAME: '表單回應', // 表單回應（打卡紀錄）
-
-  // Google Drive 資料夾名稱
-  OUTPUT_FOLDER_NAME: '復盤挑戰營報告',
+  STATS_SHEET_NAME: '\u6253\u5361\u7d71\u8a08',
+  HIGHLIGHTS_SHEET_NAME: '\u8868\u55ae\u56de\u61c9',
+  OUTPUT_FOLDER_PATH: '01_Projects/2026.Q1/2026 5 \u9031\u5fa9\u76e4\u7fd2\u6163\u990a\u6210\u6311\u6230\u71df (\u5fa9\u76e4\u966a\u8dd1)/5 \u9031\u5fa9\u76e4\u6311\u6230\u71df\u7d50\u71df\u5831\u544a',
 };
 
 // ========== 主要函數 ==========
 
-/**
- * 生成所有學員的 PDF 報告
- */
 function generateAllReports() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  // 取得資料
-  const statsSheet = ss.getSheetByName(CONFIG.STATS_SHEET_NAME);
-  const highlightsSheet = ss.getSheetByName(CONFIG.HIGHLIGHTS_SHEET_NAME);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var statsSheet = ss.getSheetByName(CONFIG.STATS_SHEET_NAME);
+  var highlightsSheet = ss.getSheetByName(CONFIG.HIGHLIGHTS_SHEET_NAME);
 
   if (!statsSheet || !highlightsSheet) {
-    throw new Error('找不到工作表，請確認 CONFIG 中的工作表名稱是否正確');
+    throw new Error('\u627e\u4e0d\u5230\u5de5\u4f5c\u8868');
   }
 
-  const statsData = statsSheet.getDataRange().getValues();
-  const highlightsData = highlightsSheet.getDataRange().getValues();
-
-  // 移除標題列
+  var statsData = statsSheet.getDataRange().getValues();
+  var highlightsData = highlightsSheet.getDataRange().getValues();
   statsData.shift();
   highlightsData.shift();
 
-  // 建立或取得輸出資料夾
-  const folder = getOrCreateFolder(CONFIG.OUTPUT_FOLDER_NAME);
+  var folder = getOrCreateFolderByPath(CONFIG.OUTPUT_FOLDER_PATH);
 
-  // 生成每位學員的報告
-  let count = 0;
-  for (const student of statsData) {
-    const name = student[0];
+  var count = 0;
+  for (var i = 0; i < statsData.length; i++) {
+    var name = statsData[i][0];
     if (!name) continue;
-
     try {
-      generateStudentReport(student, highlightsData, folder);
+      generateStudentReport(statsData[i], highlightsData, folder);
       count++;
-      Logger.log(`✅ 已生成：${name}`);
+      Logger.log('\u2705 \u5df2\u751f\u6210\uff1a' + name);
     } catch (e) {
-      Logger.log(`❌ 生成失敗：${name} - ${e.message}`);
+      Logger.log('\u274c \u751f\u6210\u5931\u6557\uff1a' + name + ' - ' + e.message);
     }
   }
 
-  Logger.log(`\n🎉 完成！共生成 ${count} 份 HTML 報告`);
-  Logger.log(`📁 報告位置：Google Drive > ${CONFIG.OUTPUT_FOLDER_NAME}`);
-  Logger.log(`\n📌 下一步：`);
-  Logger.log(`   1. 開啟 Google Drive 的「${CONFIG.OUTPUT_FOLDER_NAME}」資料夾`);
-  Logger.log(`   2. 對 HTML 檔案按右鍵 → 開啟方式 → 在新視窗中預覽`);
-  Logger.log(`   3. 點擊右上角「列印 / 存成 PDF」按鈕`);
+  Logger.log('\u5b8c\u6210\uff01\u5171\u751f\u6210 ' + count + ' \u4efd HTML \u5831\u544a');
 }
 
-/**
- * 生成單一學員的報告（用於測試）
- * @param {string} studentName - 學員姓名
- */
+function generateTestReport() {
+  var studentName = '\u5fa9\u76e4\u5c0e\u904a-\u6731\u9a0e';
+  generateSingleReport(studentName);
+}
+
 function generateSingleReport(studentName) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  const statsSheet = ss.getSheetByName(CONFIG.STATS_SHEET_NAME);
-  const highlightsSheet = ss.getSheetByName(CONFIG.HIGHLIGHTS_SHEET_NAME);
-
-  const statsData = statsSheet.getDataRange().getValues();
-  const highlightsData = highlightsSheet.getDataRange().getValues();
-
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var statsSheet = ss.getSheetByName(CONFIG.STATS_SHEET_NAME);
+  var highlightsSheet = ss.getSheetByName(CONFIG.HIGHLIGHTS_SHEET_NAME);
+  var statsData = statsSheet.getDataRange().getValues();
+  var highlightsData = highlightsSheet.getDataRange().getValues();
   statsData.shift();
   highlightsData.shift();
 
-  const student = statsData.find(s => s[0] === studentName);
+  var student = null;
+  for (var i = 0; i < statsData.length; i++) {
+    if (statsData[i][0] === studentName) {
+      student = statsData[i];
+      break;
+    }
+  }
   if (!student) {
-    throw new Error(`找不到學員：${studentName}`);
+    throw new Error('\u627e\u4e0d\u5230\u5b78\u54e1\uff1a' + studentName);
   }
 
-  const folder = getOrCreateFolder(CONFIG.OUTPUT_FOLDER_NAME);
+  var folder = getOrCreateFolderByPath(CONFIG.OUTPUT_FOLDER_PATH);
   generateStudentReport(student, highlightsData, folder);
-
-  Logger.log(`✅ 已生成 HTML 報告：${studentName}`);
-  Logger.log(`📁 位置：Google Drive > ${CONFIG.OUTPUT_FOLDER_NAME}`);
-  Logger.log(`📌 開啟 HTML 後點擊「列印 / 存成 PDF」即可下載`);
+  Logger.log('\u2705 \u5df2\u751f\u6210 HTML \u5831\u544a\uff1a' + studentName);
 }
 
 // ========== 報告生成邏輯 ==========
 
-/**
- * 生成單一學員的 PDF 報告
- */
 function generateStudentReport(student, highlightsData, folder) {
-  const name = student[0];
-  const totalDays = student[1] || 0;
+  var name = student[0];
+  var totalDays = student[1] || 0;
 
-  // 計算最高連續天數
-  const studentHighlights = highlightsData.filter(h => h[2] === name && isCheckinCompleted(h[4]));
-  const consecutiveDays = calculateConsecutiveDays(studentHighlights);
+  var studentHighlights = [];
+  for (var i = 0; i < highlightsData.length; i++) {
+    if (highlightsData[i][2] === name && isCheckinCompleted(highlightsData[i][4])) {
+      studentHighlights.push(highlightsData[i]);
+    }
+  }
 
-  // 取得里程碑
-  const milestones = {
-    day7: student[4] === '🏆',
-    day14: student[5] === '🏆',
-    day21: student[6] === '🏆',
-    day35: student[7] === '🏆',
+  var consecutiveDays = calculateConsecutiveDays(studentHighlights);
+
+  var milestones = {
+    day7: student[4] === '\u{1F3C6}',
+    day14: student[5] === '\u{1F3C6}',
+    day21: student[6] === '\u{1F3C6}',
+    day35: student[7] === '\u{1F3C6}',
   };
-  const milestonesCount = Object.values(milestones).filter(Boolean).length;
+  var milestonesCount = 0;
+  if (milestones.day7) milestonesCount++;
+  if (milestones.day14) milestonesCount++;
+  if (milestones.day21) milestonesCount++;
+  if (milestones.day35) milestonesCount++;
 
-  // 生成打卡日曆資料
-  const checkedDates = getCheckedDates(studentHighlights);
+  var checkedDates = getCheckedDates(studentHighlights);
 
-  // 取得亮點語錄
-  const highlights = getHighlightQuotes(studentHighlights);
-
-  // 生成 HTML
-  const html = generateReportHTML({
-    name,
-    totalDays,
-    consecutiveDays,
-    milestonesCount,
-    milestones,
-    checkedDates,
-    highlights,
+  var html = generateReportHTML({
+    name: name,
+    totalDays: totalDays,
+    consecutiveDays: consecutiveDays,
+    milestonesCount: milestonesCount,
+    milestones: milestones,
+    checkedDates: checkedDates,
   });
 
-  // 儲存為 HTML 檔案
-  const blob = Utilities.newBlob(html, 'text/html', `${name}_復盤挑戰歷程報告.html`);
+  var fileName = name + '_\u7d50\u696d\u8b49\u66f8.html';
+  var blob = Utilities.newBlob(html, 'text/html', fileName);
 
-  // 檢查是否已存在同名檔案，若有則刪除
-  const existingFiles = folder.getFilesByName(`${name}_復盤挑戰歷程報告.html`);
+  var existingFiles = folder.getFilesByName(fileName);
   while (existingFiles.hasNext()) {
     existingFiles.next().setTrashed(true);
   }
@@ -152,49 +134,57 @@ function generateStudentReport(student, highlightsData, folder) {
   folder.createFile(blob);
 }
 
-/**
- * 檢查打卡是否完成
- */
 function isCheckinCompleted(status) {
   if (!status) return false;
-  const s = String(status).toLowerCase();
-  return (s.includes('是') && s.includes('完成')) ||
-         (s.includes('yes') && s.includes('完成')) ||
-         s.includes('✅');
+  var s = String(status).toLowerCase();
+  return s.indexOf('yes') >= 0 ||
+         s.indexOf('\u2705') >= 0 ||
+         (s.indexOf('\u662f') >= 0 && s.indexOf('\u5b8c\u6210') >= 0);
 }
 
-/**
- * 計算最高連續打卡天數
- */
 function calculateConsecutiveDays(studentHighlights) {
   if (studentHighlights.length === 0) return 0;
 
-  // 取得所有打卡日期
-  const dates = studentHighlights
-    .map(h => {
-      const dateStr = String(h[3]).split(' ')[0];
-      return new Date(dateStr);
-    })
-    .filter(d => !isNaN(d.getTime()))
-    .sort((a, b) => a - b);
+  var dates = [];
+  for (var i = 0; i < studentHighlights.length; i++) {
+    var h = studentHighlights[i];
+    var date;
+    if (h[3] instanceof Date) {
+      date = h[3];
+    } else {
+      var dateStr = String(h[3]).split(' ')[0];
+      date = new Date(dateStr);
+    }
+    if (!isNaN(date.getTime())) {
+      dates.push(date);
+    }
+  }
 
+  dates.sort(function(a, b) { return a - b; });
   if (dates.length === 0) return 0;
 
-  // 轉換為日期字串集合（去重）
-  const dateSet = new Set(dates.map(d => d.toISOString().split('T')[0]));
-  const uniqueDates = Array.from(dateSet).sort();
+  var dateStrs = {};
+  var uniqueDates = [];
+  for (var i = 0; i < dates.length; i++) {
+    var ds = dates[i].toISOString().split('T')[0];
+    if (!dateStrs[ds]) {
+      dateStrs[ds] = true;
+      uniqueDates.push(ds);
+    }
+  }
+  uniqueDates.sort();
 
-  let maxConsecutive = 1;
-  let currentConsecutive = 1;
+  var maxConsecutive = 1;
+  var currentConsecutive = 1;
 
-  for (let i = 1; i < uniqueDates.length; i++) {
-    const prev = new Date(uniqueDates[i - 1]);
-    const curr = new Date(uniqueDates[i]);
-    const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
+  for (var i = 1; i < uniqueDates.length; i++) {
+    var prev = new Date(uniqueDates[i - 1]);
+    var curr = new Date(uniqueDates[i]);
+    var diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
 
     if (diffDays === 1) {
       currentConsecutive++;
-      maxConsecutive = Math.max(maxConsecutive, currentConsecutive);
+      if (currentConsecutive > maxConsecutive) maxConsecutive = currentConsecutive;
     } else {
       currentConsecutive = 1;
     }
@@ -203,608 +193,388 @@ function calculateConsecutiveDays(studentHighlights) {
   return maxConsecutive;
 }
 
-/**
- * 取得已打卡的日期集合
- */
 function getCheckedDates(studentHighlights) {
-  const dates = new Set();
+  var dates = {};
 
-  studentHighlights.forEach(h => {
-    const dateStr = String(h[3]).split(' ')[0];
-    const date = new Date(dateStr);
+  for (var i = 0; i < studentHighlights.length; i++) {
+    var h = studentHighlights[i];
+    var date;
+    if (h[3] instanceof Date) {
+      date = h[3];
+    } else {
+      var dateStr = String(h[3]).split(' ')[0];
+      date = new Date(dateStr);
+    }
+
     if (!isNaN(date.getTime())) {
-      // 計算是第幾天
-      const dayNumber = Math.floor((date - CONFIG.COURSE_START_DATE) / (1000 * 60 * 60 * 24)) + 1;
+      var dayNumber = Math.floor((date - CONFIG.COURSE_START_DATE) / (1000 * 60 * 60 * 24)) + 1;
       if (dayNumber >= 1 && dayNumber <= 35) {
-        dates.add(dayNumber);
+        dates[dayNumber] = true;
       }
     }
-  });
+  }
 
   return dates;
 }
 
-/**
- * 取得亮點語錄（取 DAY 1, 7, 21 或最近的幾則）
- */
-function getHighlightQuotes(studentHighlights) {
-  const quotes = [];
+function getOrCreateFolderByPath(path) {
+  var folderNames = path.split('/');
+  var currentFolder = DriveApp.getRootFolder();
 
-  // 按日期排序
-  const sorted = studentHighlights
-    .map(h => ({
-      date: new Date(String(h[3]).split(' ')[0]),
-      content: h[5] || '',
-    }))
-    .filter(h => !isNaN(h.date.getTime()) && h.content)
-    .sort((a, b) => a.date - b.date);
-
-  // 取前幾則有內容的
-  const selected = sorted.slice(0, 3);
-
-  selected.forEach(h => {
-    const dayNumber = Math.floor((h.date - CONFIG.COURSE_START_DATE) / (1000 * 60 * 60 * 24)) + 1;
-    quotes.push({
-      day: dayNumber,
-      date: formatDate(h.date),
-      content: h.content,
-    });
-  });
-
-  return quotes;
-}
-
-/**
- * 格式化日期
- */
-function formatDate(date) {
-  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-}
-
-/**
- * 取得或建立資料夾
- */
-function getOrCreateFolder(folderName) {
-  const folders = DriveApp.getFoldersByName(folderName);
-  if (folders.hasNext()) {
-    return folders.next();
+  for (var i = 0; i < folderNames.length; i++) {
+    var folderName = folderNames[i].trim();
+    if (!folderName) continue;
+    var folders = currentFolder.getFoldersByName(folderName);
+    if (folders.hasNext()) {
+      currentFolder = folders.next();
+    } else {
+      currentFolder = currentFolder.createFolder(folderName);
+    }
   }
-  return DriveApp.createFolder(folderName);
+
+  return currentFolder;
 }
 
-// ========== HTML 模板（證書設計版）==========
+// ========== HTML 模板（瀏覽器截圖版）==========
 
 function generateReportHTML(data) {
-  const { name, totalDays, consecutiveDays, milestonesCount, milestones, checkedDates, highlights } = data;
+  var name = data.name;
+  var totalDays = data.totalDays;
+  var consecutiveDays = data.consecutiveDays;
+  var milestonesCount = data.milestonesCount;
+  var milestones = data.milestones;
+  var checkedDates = data.checkedDates;
 
   // 生成日曆 HTML
-  let calendarHTML = '';
-  for (let day = 1; day <= 35; day++) {
-    const date = new Date(CONFIG.COURSE_START_DATE);
+  var calendarHTML = '';
+  for (var day = 1; day <= 35; day++) {
+    var date = new Date(CONFIG.COURSE_START_DATE);
     date.setDate(date.getDate() + day - 1);
-    const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+    var dateStr = (date.getMonth() + 1) + '/' + date.getDate();
 
-    let dayClass = 'missed';
-    if (checkedDates.has(day)) {
-      dayClass = 'checked';
-    }
+    var isChecked = checkedDates[day] === true;
+    var dayClass = isChecked ? 'checked' : 'missed';
 
-    calendarHTML += `
-      <div class="calendar-day ${dayClass}">
-        <span class="calendar-day-number">${day}</span>
-        <span class="calendar-day-date">${dateStr}</span>
-      </div>`;
+    calendarHTML += '<div class="calendar-day ' + dayClass + '">' +
+      '<span class="calendar-day-number">' + day + '</span>' +
+      '<span class="calendar-day-date">' + dateStr + '</span>' +
+      '</div>';
   }
 
   // 里程碑狀態
-  const m7Class = milestones.day7 ? 'achieved' : 'locked';
-  const m14Class = milestones.day14 ? 'achieved' : 'locked';
-  const m21Class = milestones.day21 ? 'achieved' : 'locked';
-  const m35Class = milestones.day35 ? 'achieved' : 'locked';
+  var m7Class = milestones.day7 ? 'achieved' : 'locked';
+  var m14Class = milestones.day14 ? 'achieved' : 'locked';
+  var m21Class = milestones.day21 ? 'achieved' : 'locked';
+  var m35Class = milestones.day35 ? 'achieved' : 'locked';
 
-  return `<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${escapeHtml(name)} - 結業證書</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background: #2C3E50;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        @media print {
-            body { background: white; padding: 0; }
-            .certificate { margin: 0; box-shadow: none; }
-            .no-print { display: none !important; }
-        }
-
-        .toolbar {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-        }
-
-        .toolbar button {
-            padding: 14px 28px;
-            background: linear-gradient(135deg, #FF6B35, #FF8C52);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(255,107,53,0.4);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-        }
-
-        .toolbar button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255,107,53,0.5);
-        }
-
-        .toolbar button i { width: 20px; height: 20px; }
-
-        /* 證書主體 */
-        .certificate {
-            width: 297mm;
-            height: 210mm;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #FFFAF5 0%, #FFF8F0 50%, #FFFAF5 100%);
-            position: relative;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        /* 裝飾邊框 */
-        .certificate::before {
-            content: '';
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            right: 12px;
-            bottom: 12px;
-            border: 3px solid #FF6B35;
-            border-radius: 8px;
-            pointer-events: none;
-        }
-
-        .certificate::after {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
-            border: 1px solid #FFB088;
-            border-radius: 4px;
-            pointer-events: none;
-        }
-
-        /* 角落裝飾 */
-        .corner-decoration {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            opacity: 0.15;
-        }
-
-        .corner-decoration.top-left { top: 30px; left: 30px; }
-        .corner-decoration.top-right { top: 30px; right: 30px; transform: rotate(90deg); }
-        .corner-decoration.bottom-left { bottom: 30px; left: 30px; transform: rotate(-90deg); }
-        .corner-decoration.bottom-right { bottom: 30px; right: 30px; transform: rotate(180deg); }
-
-        .corner-decoration svg {
-            width: 100%;
-            height: 100%;
-            fill: #FF6B35;
-        }
-
-        /* 內容區 */
-        .certificate-content {
-            position: relative;
-            z-index: 1;
-            height: 100%;
-            display: flex;
-            padding: 35px 50px;
-            gap: 40px;
-        }
-
-        /* 左側：證書主體 */
-        .cert-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .cert-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #FF6B35, #FF8C52);
-            color: white;
-            padding: 8px 24px;
-            border-radius: 25px;
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-        }
-
-        .cert-badge i { width: 16px; height: 16px; }
-
-        .cert-title {
-            font-family: 'Noto Serif TC', serif;
-            font-size: 52px;
-            font-weight: 900;
-            color: #2C3E50;
-            margin-bottom: 8px;
-            letter-spacing: 8px;
-        }
-
-        .cert-subtitle {
-            font-size: 16px;
-            color: #888;
-            letter-spacing: 4px;
-            margin-bottom: 30px;
-        }
-
-        .cert-name-section {
-            margin: 20px 0 25px;
-        }
-
-        .cert-name-label {
-            font-size: 14px;
-            color: #999;
-            margin-bottom: 8px;
-        }
-
-        .cert-name {
-            font-family: 'Noto Serif TC', serif;
-            font-size: 56px;
-            font-weight: 900;
-            color: #FF6B35;
-            border-bottom: 3px solid #FF6B35;
-            padding-bottom: 8px;
-            display: inline-block;
-            min-width: 280px;
-        }
-
-        .cert-description {
-            font-size: 18px;
-            color: #555;
-            line-height: 2;
-            max-width: 480px;
-            margin-bottom: 25px;
-        }
-
-        .cert-stats {
-            display: flex;
-            justify-content: center;
-            gap: 50px;
-            margin-bottom: 25px;
-        }
-
-        .cert-stat {
-            text-align: center;
-        }
-
-        .cert-stat-value {
-            font-family: 'Noto Serif TC', serif;
-            font-size: 48px;
-            font-weight: 900;
-            color: #FF6B35;
-            line-height: 1;
-        }
-
-        .cert-stat-label {
-            font-size: 13px;
-            color: #888;
-            margin-top: 5px;
-        }
-
-        .cert-date {
-            font-size: 14px;
-            color: #999;
-            margin-top: 15px;
-        }
-
-        .cert-signature {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .cert-signature-line {
-            width: 160px;
-            height: 1px;
-            background: #CCC;
-            margin: 0 auto 8px;
-        }
-
-        .cert-signature-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #2C3E50;
-        }
-
-        .cert-signature-title {
-            font-size: 12px;
-            color: #999;
-        }
-
-        /* 右側：成就與日曆 */
-        .cert-side {
-            width: 320px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .side-card {
-            background: white;
-            border-radius: 16px;
-            padding: 18px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
-
-        .side-card-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #2C3E50;
-            margin-bottom: 12px;
-        }
-
-        .side-card-title i {
-            width: 18px;
-            height: 18px;
-            color: #FF6B35;
-        }
-
-        /* 里程碑 */
-        .milestones-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        .milestone-badge {
-            text-align: center;
-            padding: 10px 5px;
-            background: #F8F9FA;
-            border-radius: 10px;
-            border: 2px solid #E9ECEF;
-        }
-
-        .milestone-badge.achieved {
-            background: linear-gradient(135deg, #FFF8E1, #FFECB3);
-            border-color: #FFD93D;
-        }
-
-        .milestone-badge.locked { opacity: 0.35; }
-
-        .milestone-badge i {
-            width: 24px;
-            height: 24px;
-            margin-bottom: 4px;
-        }
-
-        .milestone-badge.achieved i.bronze { color: #CD7F32; }
-        .milestone-badge.achieved i.silver { color: #A8A8A8; }
-        .milestone-badge.achieved i.gold { color: #FFD700; }
-        .milestone-badge.achieved i.platinum { color: #E5C100; }
-
-        .milestone-days {
-            font-size: 12px;
-            font-weight: 700;
-            color: #2C3E50;
-        }
-
-        /* 日曆 */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-        }
-
-        .calendar-header {
-            text-align: center;
-            font-size: 10px;
-            font-weight: 700;
-            color: #FF6B35;
-            padding: 4px 0;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            background: #F5F5F5;
-            border: 1px solid #E8E8E8;
-        }
-
-        .calendar-day.checked {
-            background: linear-gradient(135deg, #4CAF50, #66BB6A);
-            border-color: #388E3C;
-            color: white;
-        }
-
-        .calendar-day.missed {
-            background: white;
-            color: #DDD;
-        }
-
-        .calendar-day-number {
-            font-size: 11px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .calendar-day-date {
-            font-size: 7px;
-            opacity: 0.7;
-        }
-
-        /* 底部標語 */
-        .cert-footer {
-            position: absolute;
-            bottom: 25px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 13px;
-            color: #BBB;
-            letter-spacing: 3px;
-        }
-    </style>
-</head>
-<body>
-    <div class="toolbar no-print">
-        <button onclick="window.print()">
-            <i data-lucide="file-down"></i>
-            列印 / 存成 PDF
-        </button>
-    </div>
-
-    <div class="certificate">
-        <!-- 角落裝飾 -->
-        <div class="corner-decoration top-left">
-            <svg viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"/></svg>
-        </div>
-        <div class="corner-decoration top-right">
-            <svg viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"/></svg>
-        </div>
-        <div class="corner-decoration bottom-left">
-            <svg viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"/></svg>
-        </div>
-        <div class="corner-decoration bottom-right">
-            <svg viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"/></svg>
-        </div>
-
-        <div class="certificate-content">
-            <!-- 左側：證書主體 -->
-            <div class="cert-main">
-                <div class="cert-badge">
-                    <i data-lucide="award"></i>
-                    CERTIFICATE OF COMPLETION
-                </div>
-
-                <h1 class="cert-title">結 業 證 書</h1>
-                <p class="cert-subtitle">五週復盤習慣養成挑戰營</p>
-
-                <div class="cert-name-section">
-                    <div class="cert-name-label">茲證明</div>
-                    <div class="cert-name">${escapeHtml(name)}</div>
-                </div>
-
-                <p class="cert-description">
-                    已完成「五週復盤習慣養成挑戰營」全部課程，<br>
-                    於 35 天挑戰期間展現卓越的堅持與毅力，<br>
-                    成功養成每日復盤的良好習慣。
-                </p>
-
-                <div class="cert-stats">
-                    <div class="cert-stat">
-                        <div class="cert-stat-value">${totalDays}</div>
-                        <div class="cert-stat-label">打卡天數</div>
-                    </div>
-                    <div class="cert-stat">
-                        <div class="cert-stat-value">${consecutiveDays}</div>
-                        <div class="cert-stat-label">最高連續</div>
-                    </div>
-                    <div class="cert-stat">
-                        <div class="cert-stat-value">${milestonesCount}</div>
-                        <div class="cert-stat-label">里程碑</div>
-                    </div>
-                </div>
-
-                <div class="cert-date">結營日期：2026 年 4 月 7 日</div>
-
-                <div class="cert-signature">
-                    <div class="cert-signature-line"></div>
-                    <div class="cert-signature-name">朱騏</div>
-                    <div class="cert-signature-title">課程講師</div>
-                </div>
-            </div>
-
-            <!-- 右側：成就與日曆 -->
-            <div class="cert-side">
-                <div class="side-card">
-                    <div class="side-card-title">
-                        <i data-lucide="medal"></i>
-                        連續打卡里程碑
-                    </div>
-                    <div class="milestones-grid">
-                        <div class="milestone-badge ${m7Class}">
-                            <i data-lucide="medal" class="bronze"></i>
-                            <div class="milestone-days">7天</div>
-                        </div>
-                        <div class="milestone-badge ${m14Class}">
-                            <i data-lucide="medal" class="silver"></i>
-                            <div class="milestone-days">14天</div>
-                        </div>
-                        <div class="milestone-badge ${m21Class}">
-                            <i data-lucide="medal" class="gold"></i>
-                            <div class="milestone-days">21天</div>
-                        </div>
-                        <div class="milestone-badge ${m35Class}">
-                            <i data-lucide="trophy" class="platinum"></i>
-                            <div class="milestone-days">35天</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="side-card" style="flex: 1;">
-                    <div class="side-card-title">
-                        <i data-lucide="calendar-days"></i>
-                        35 天打卡紀錄
-                    </div>
-                    <div class="calendar-grid">
-                        <div class="calendar-header">一</div>
-                        <div class="calendar-header">二</div>
-                        <div class="calendar-header">三</div>
-                        <div class="calendar-header">四</div>
-                        <div class="calendar-header">五</div>
-                        <div class="calendar-header">六</div>
-                        <div class="calendar-header">日</div>
-                        ${calendarHTML}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="cert-footer">每天復盤，每天進步</div>
-    </div>
-
-    <script>
-        lucide.createIcons();
-    </script>
-</body>
-</html>`;
+  return '<!DOCTYPE html>\n' +
+'<html lang="zh-TW">\n' +
+'<head>\n' +
+'    <meta charset="UTF-8">\n' +
+'    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'    <title>' + escapeHtml(name) + ' - \u7d50\u696d\u8b49\u66f8</title>\n' +
+'    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">\n' +
+'    <script src="https://unpkg.com/lucide@latest"><\/script>\n' +
+'    <style>\n' +
+'        * { margin: 0; padding: 0; box-sizing: border-box; }\n' +
+'        body {\n' +
+'            font-family: "Noto Sans TC", sans-serif;\n' +
+'            background: #2C3E50;\n' +
+'            min-height: 100vh;\n' +
+'            display: flex;\n' +
+'            align-items: center;\n' +
+'            justify-content: center;\n' +
+'            padding: 40px 20px;\n' +
+'        }\n' +
+'        .certificate {\n' +
+'            width: 1120px;\n' +
+'            height: 790px;\n' +
+'            background: linear-gradient(135deg, #FFFAF5 0%, #FFF8F0 50%, #FFFAF5 100%);\n' +
+'            position: relative;\n' +
+'            box-shadow: 0 25px 80px rgba(0,0,0,0.3);\n' +
+'            overflow: hidden;\n' +
+'        }\n' +
+'        .certificate::before {\n' +
+'            content: "";\n' +
+'            position: absolute;\n' +
+'            top: 12px; left: 12px; right: 12px; bottom: 12px;\n' +
+'            border: 3px solid #FF6B35;\n' +
+'            border-radius: 8px;\n' +
+'            pointer-events: none;\n' +
+'        }\n' +
+'        .certificate::after {\n' +
+'            content: "";\n' +
+'            position: absolute;\n' +
+'            top: 20px; left: 20px; right: 20px; bottom: 20px;\n' +
+'            border: 1px solid #FFB088;\n' +
+'            border-radius: 4px;\n' +
+'            pointer-events: none;\n' +
+'        }\n' +
+'        .corner-decoration {\n' +
+'            position: absolute;\n' +
+'            width: 80px; height: 80px;\n' +
+'            opacity: 0.15;\n' +
+'        }\n' +
+'        .corner-decoration.top-left { top: 30px; left: 30px; }\n' +
+'        .corner-decoration.top-right { top: 30px; right: 30px; transform: rotate(90deg); }\n' +
+'        .corner-decoration.bottom-left { bottom: 30px; left: 30px; transform: rotate(-90deg); }\n' +
+'        .corner-decoration.bottom-right { bottom: 30px; right: 30px; transform: rotate(180deg); }\n' +
+'        .corner-decoration svg { width: 100%; height: 100%; fill: #FF6B35; }\n' +
+'        .certificate-content {\n' +
+'            position: relative;\n' +
+'            z-index: 1;\n' +
+'            height: 100%;\n' +
+'            display: flex;\n' +
+'            padding: 35px 50px;\n' +
+'            gap: 40px;\n' +
+'        }\n' +
+'        .cert-main {\n' +
+'            flex: 1;\n' +
+'            display: flex;\n' +
+'            flex-direction: column;\n' +
+'            align-items: center;\n' +
+'            justify-content: center;\n' +
+'            text-align: center;\n' +
+'        }\n' +
+'        .cert-badge {\n' +
+'            display: inline-flex;\n' +
+'            align-items: center;\n' +
+'            gap: 8px;\n' +
+'            background: linear-gradient(135deg, #FF6B35, #FF8C52);\n' +
+'            color: white;\n' +
+'            padding: 8px 24px;\n' +
+'            border-radius: 25px;\n' +
+'            font-size: 13px;\n' +
+'            font-weight: 700;\n' +
+'            letter-spacing: 2px;\n' +
+'            margin-bottom: 15px;\n' +
+'        }\n' +
+'        .cert-badge i { width: 16px; height: 16px; }\n' +
+'        .cert-title {\n' +
+'            font-family: "Noto Serif TC", serif;\n' +
+'            font-size: 52px;\n' +
+'            font-weight: 900;\n' +
+'            color: #2C3E50;\n' +
+'            margin-bottom: 8px;\n' +
+'            letter-spacing: 8px;\n' +
+'        }\n' +
+'        .cert-subtitle {\n' +
+'            font-size: 16px;\n' +
+'            color: #888;\n' +
+'            letter-spacing: 4px;\n' +
+'            margin-bottom: 30px;\n' +
+'        }\n' +
+'        .cert-name-section { margin: 20px 0 25px; }\n' +
+'        .cert-name-label { font-size: 14px; color: #999; margin-bottom: 8px; }\n' +
+'        .cert-name {\n' +
+'            font-family: "Noto Serif TC", serif;\n' +
+'            font-size: 56px;\n' +
+'            font-weight: 900;\n' +
+'            color: #FF6B35;\n' +
+'            border-bottom: 3px solid #FF6B35;\n' +
+'            padding-bottom: 8px;\n' +
+'            display: inline-block;\n' +
+'            min-width: 280px;\n' +
+'        }\n' +
+'        .cert-description {\n' +
+'            font-size: 18px;\n' +
+'            color: #555;\n' +
+'            line-height: 2;\n' +
+'            max-width: 480px;\n' +
+'            margin-bottom: 25px;\n' +
+'        }\n' +
+'        .cert-stats {\n' +
+'            display: flex;\n' +
+'            justify-content: center;\n' +
+'            gap: 50px;\n' +
+'            margin-bottom: 25px;\n' +
+'        }\n' +
+'        .cert-stat { text-align: center; }\n' +
+'        .cert-stat-value {\n' +
+'            font-family: "Noto Serif TC", serif;\n' +
+'            font-size: 48px;\n' +
+'            font-weight: 900;\n' +
+'            color: #FF6B35;\n' +
+'            line-height: 1;\n' +
+'        }\n' +
+'        .cert-stat-label { font-size: 13px; color: #888; margin-top: 5px; }\n' +
+'        .cert-date { font-size: 14px; color: #999; margin-top: 15px; }\n' +
+'        .cert-signature { margin-top: 20px; text-align: center; }\n' +
+'        .cert-signature-line {\n' +
+'            width: 160px; height: 1px;\n' +
+'            background: #CCC;\n' +
+'            margin: 0 auto 8px;\n' +
+'        }\n' +
+'        .cert-signature-name { font-size: 18px; font-weight: 700; color: #2C3E50; }\n' +
+'        .cert-signature-title { font-size: 12px; color: #999; }\n' +
+'        .cert-side {\n' +
+'            width: 320px;\n' +
+'            display: flex;\n' +
+'            flex-direction: column;\n' +
+'            gap: 15px;\n' +
+'        }\n' +
+'        .side-card {\n' +
+'            background: white;\n' +
+'            border-radius: 16px;\n' +
+'            padding: 18px;\n' +
+'            box-shadow: 0 4px 20px rgba(0,0,0,0.06);\n' +
+'        }\n' +
+'        .side-card-title {\n' +
+'            display: flex;\n' +
+'            align-items: center;\n' +
+'            gap: 8px;\n' +
+'            font-size: 14px;\n' +
+'            font-weight: 700;\n' +
+'            color: #2C3E50;\n' +
+'            margin-bottom: 12px;\n' +
+'        }\n' +
+'        .side-card-title i { width: 18px; height: 18px; color: #FF6B35; }\n' +
+'        .milestones-grid {\n' +
+'            display: grid;\n' +
+'            grid-template-columns: repeat(4, 1fr);\n' +
+'            gap: 8px;\n' +
+'        }\n' +
+'        .milestone-badge {\n' +
+'            text-align: center;\n' +
+'            padding: 10px 5px;\n' +
+'            background: #F8F9FA;\n' +
+'            border-radius: 10px;\n' +
+'            border: 2px solid #E9ECEF;\n' +
+'        }\n' +
+'        .milestone-badge.achieved {\n' +
+'            background: linear-gradient(135deg, #FFF8E1, #FFECB3);\n' +
+'            border-color: #FFD93D;\n' +
+'        }\n' +
+'        .milestone-badge.locked { opacity: 0.35; }\n' +
+'        .milestone-badge i { width: 24px; height: 24px; margin-bottom: 4px; }\n' +
+'        .milestone-badge.achieved i.bronze { color: #CD7F32; }\n' +
+'        .milestone-badge.achieved i.silver { color: #A8A8A8; }\n' +
+'        .milestone-badge.achieved i.gold { color: #FFD700; }\n' +
+'        .milestone-badge.achieved i.platinum { color: #E5C100; }\n' +
+'        .milestone-days { font-size: 12px; font-weight: 700; color: #2C3E50; }\n' +
+'        .calendar-grid {\n' +
+'            display: grid;\n' +
+'            grid-template-columns: repeat(7, 1fr);\n' +
+'            gap: 4px;\n' +
+'        }\n' +
+'        .calendar-header {\n' +
+'            text-align: center;\n' +
+'            font-size: 10px;\n' +
+'            font-weight: 700;\n' +
+'            color: #FF6B35;\n' +
+'            padding: 4px 0;\n' +
+'        }\n' +
+'        .calendar-day {\n' +
+'            aspect-ratio: 1;\n' +
+'            display: flex;\n' +
+'            flex-direction: column;\n' +
+'            align-items: center;\n' +
+'            justify-content: center;\n' +
+'            border-radius: 6px;\n' +
+'            background: #F5F5F5;\n' +
+'            border: 1px solid #E8E8E8;\n' +
+'        }\n' +
+'        .calendar-day.checked {\n' +
+'            background: linear-gradient(135deg, #4CAF50, #66BB6A);\n' +
+'            border-color: #388E3C;\n' +
+'            color: white;\n' +
+'        }\n' +
+'        .calendar-day.missed { background: white; color: #DDD; }\n' +
+'        .calendar-day-number { font-size: 11px; font-weight: 700; line-height: 1; }\n' +
+'        .calendar-day-date { font-size: 7px; opacity: 0.7; }\n' +
+'        .cert-footer {\n' +
+'            position: absolute;\n' +
+'            bottom: 25px; left: 0; right: 0;\n' +
+'            text-align: center;\n' +
+'            font-size: 13px;\n' +
+'            color: #BBB;\n' +
+'            letter-spacing: 3px;\n' +
+'        }\n' +
+'    </style>\n' +
+'</head>\n' +
+'<body>\n' +
+'    <div class="certificate">\n' +
+'        <div class="corner-decoration top-left"><svg viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"/></svg></div>\n' +
+'        <div class="corner-decoration top-right"><svg viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"/></svg></div>\n' +
+'        <div class="corner-decoration bottom-left"><svg viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"/></svg></div>\n' +
+'        <div class="corner-decoration bottom-right"><svg viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 L20,20 L20,100 L0,100 Z"/></svg></div>\n' +
+'\n' +
+'        <div class="certificate-content">\n' +
+'            <div class="cert-main">\n' +
+'                <div class="cert-badge">\n' +
+'                    <i data-lucide="award"></i>\n' +
+'                    CERTIFICATE OF COMPLETION\n' +
+'                </div>\n' +
+'                <h1 class="cert-title">\u7d50 \u696d \u8b49 \u66f8</h1>\n' +
+'                <p class="cert-subtitle">\u4e94\u9031\u5fa9\u76e4\u7fd2\u6163\u990a\u6210\u6311\u6230\u71df</p>\n' +
+'                <div class="cert-name-section">\n' +
+'                    <div class="cert-name-label">\u8332\u8b49\u660e</div>\n' +
+'                    <div class="cert-name">' + escapeHtml(name) + '</div>\n' +
+'                </div>\n' +
+'                <p class="cert-description">\n' +
+'                    \u5df2\u5b8c\u6210\u300c\u4e94\u9031\u5fa9\u76e4\u7fd2\u6163\u990a\u6210\u6311\u6230\u71df\u300d\u5168\u90e8\u8ab2\u7a0b\uff0c<br>\n' +
+'                    \u65bc 35 \u5929\u6311\u6230\u671f\u9593\u5c55\u73fe\u5353\u8d8a\u7684\u5805\u6301\u8207\u6bc5\u529b\uff0c<br>\n' +
+'                    \u6210\u529f\u990a\u6210\u6bcf\u65e5\u5fa9\u76e4\u7684\u826f\u597d\u7fd2\u6163\u3002\n' +
+'                </p>\n' +
+'                <div class="cert-stats">\n' +
+'                    <div class="cert-stat">\n' +
+'                        <div class="cert-stat-value">' + totalDays + '</div>\n' +
+'                        <div class="cert-stat-label">\u6253\u5361\u5929\u6578</div>\n' +
+'                    </div>\n' +
+'                    <div class="cert-stat">\n' +
+'                        <div class="cert-stat-value">' + consecutiveDays + '</div>\n' +
+'                        <div class="cert-stat-label">\u6700\u9ad8\u9023\u7e8c</div>\n' +
+'                    </div>\n' +
+'                    <div class="cert-stat">\n' +
+'                        <div class="cert-stat-value">' + milestonesCount + '</div>\n' +
+'                        <div class="cert-stat-label">\u91cc\u7a0b\u7891</div>\n' +
+'                    </div>\n' +
+'                </div>\n' +
+'                <div class="cert-date">\u7d50\u71df\u65e5\u671f\uff1a2026 \u5e74 4 \u6708 7 \u65e5</div>\n' +
+'                <div class="cert-signature">\n' +
+'                    <div class="cert-signature-line"></div>\n' +
+'                    <div class="cert-signature-name">\u6731\u9a0e</div>\n' +
+'                    <div class="cert-signature-title">\u8ab2\u7a0b\u8b1b\u5e2b</div>\n' +
+'                </div>\n' +
+'            </div>\n' +
+'            <div class="cert-side">\n' +
+'                <div class="side-card">\n' +
+'                    <div class="side-card-title">\n' +
+'                        <i data-lucide="medal"></i>\n' +
+'                        \u9023\u7e8c\u6253\u5361\u91cc\u7a0b\u7891\n' +
+'                    </div>\n' +
+'                    <div class="milestones-grid">\n' +
+'                        <div class="milestone-badge ' + m7Class + '"><i data-lucide="medal" class="bronze"></i><div class="milestone-days">7 \u5929</div></div>\n' +
+'                        <div class="milestone-badge ' + m14Class + '"><i data-lucide="medal" class="silver"></i><div class="milestone-days">14 \u5929</div></div>\n' +
+'                        <div class="milestone-badge ' + m21Class + '"><i data-lucide="medal" class="gold"></i><div class="milestone-days">21 \u5929</div></div>\n' +
+'                        <div class="milestone-badge ' + m35Class + '"><i data-lucide="trophy" class="platinum"></i><div class="milestone-days">35 \u5929</div></div>\n' +
+'                    </div>\n' +
+'                </div>\n' +
+'                <div class="side-card" style="flex: 1;">\n' +
+'                    <div class="side-card-title">\n' +
+'                        <i data-lucide="calendar-days"></i>\n' +
+'                        35 \u5929\u6253\u5361\u7d00\u9304\n' +
+'                    </div>\n' +
+'                    <div class="calendar-grid">\n' +
+'                        <div class="calendar-header">\u4e00</div>\n' +
+'                        <div class="calendar-header">\u4e8c</div>\n' +
+'                        <div class="calendar-header">\u4e09</div>\n' +
+'                        <div class="calendar-header">\u56db</div>\n' +
+'                        <div class="calendar-header">\u4e94</div>\n' +
+'                        <div class="calendar-header">\u516d</div>\n' +
+'                        <div class="calendar-header">\u65e5</div>\n' +
+'                        ' + calendarHTML + '\n' +
+'                    </div>\n' +
+'                </div>\n' +
+'            </div>\n' +
+'        </div>\n' +
+'        <div class="cert-footer">\u6bcf\u5929\u5fa9\u76e4\uff0c\u6bcf\u5929\u9032\u6b65</div>\n' +
+'    </div>\n' +
+'    <script>lucide.createIcons();<\/script>\n' +
+'</body>\n' +
+'</html>';
 }
 
-/**
- * HTML 特殊字元跳脫
- */
 function escapeHtml(text) {
   if (!text) return '';
   return String(text)
@@ -814,3 +584,4 @@ function escapeHtml(text) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+// prettier-ignore-end
